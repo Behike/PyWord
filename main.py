@@ -38,13 +38,7 @@ def formatDocument(input, output):
     styles = document.styles
 
     ## Format title
-    # if not ('TitleCustom' in document.styles):
-    #     title_style = styles.add_style('TitleCustom', WD_STYLE_TYPE.PARAGRAPH)
-    # else:
-    #     title_style = document.styles['TitleCustom']
-
     if ('Title' in document.styles):
-        # title_style.base_style = document.styles['Title']
         title_style = document.styles['Title']
     else:
         title_style = styles.add_style('Title', WD_STYLE_TYPE.PARAGRAPH)
@@ -58,13 +52,7 @@ def formatDocument(input, output):
     title_style.font.color.rgb = RGBColor(0x0,0x0,0x0)
 
     ## Format chapters
-    # if not ('Chapter' in document.styles):
-    #     heading_style = styles.add_style('Chapter', WD_STYLE_TYPE.PARAGRAPH)
-    # else:
-    #     heading_style = document.styles['Chapter']
-
     if ('Heading 1' in document.styles):
-        # heading_style.base_style = document.styles['Heading 1']
         heading_style = document.styles['Heading 1']
     else:
         heading_style = styles.add_style('Heading 1', WD_STYLE_TYPE.PARAGRAPH)
@@ -77,17 +65,8 @@ def formatDocument(input, output):
     heading_style.font.size = Pt(36)
     heading_style.font.color.rgb = RGBColor(0x0,0x0,0x0)
 
-    for val in document.styles['Heading 1']:
-        print(val + " - " + heading_style.val)
-
     ## Format normal
-    # if not ('NormalCustom' in document.styles):
-    #     normal_style = styles.add_style('NormalCustom', WD_STYLE_TYPE.PARAGRAPH)
-    # else:
-    #     normal_style = document.styles['NormalCustom']
-
     if ('Normal' in document.styles):
-        # normal_style.base_style = document.styles['Normal']
         normal_style = document.styles['Normal']
     else:
         normal_style = styles.add_style('Normal', WD_STYLE_TYPE.PARAGRAPH)
@@ -96,17 +75,11 @@ def formatDocument(input, output):
     normal_style.font.size = Pt(10)
 
     ## Format subtitle
-    # if not ('SubtitleCustom' in document.styles):
-    #     subtitle_style = styles.add_style('SubtitleCustom', WD_STYLE_TYPE.PARAGRAPH)
-    # else:
-    #     subtitle_style = document.styles['SubtitleCustom']
-
     if not ('Subtitle' in document.styles):
         subtitle_style = styles.add_style('Subtitle', WD_STYLE_TYPE.PARAGRAPH)
     else:
         subtitle_style = document.styles['Subtitle']
-    # if ('Normal' in document.styles):
-        # subtitle_style.base_style = document.styles['Normal']
+    
     subtitle_style.base_style = document.styles['Normal']
     subtitle_style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
     subtitle_style.paragraph_format.space_after = Pt(45)
@@ -127,7 +100,6 @@ def formatDocument(input, output):
         elif (para.style.name == "Title"):
             para.style = title_style
             # Add sub-title
-            # subtitle = document.add_paragraph(copyright_text, style='SubtitleCustom')
             subtitle = document.add_paragraph(copyright_text, style='Subtitle')
             subt = subtitle._p
             p = para._p
@@ -135,8 +107,6 @@ def formatDocument(input, output):
 
         else:
             para.style = normal_style
-            # para.style.font.name = "Palatino Linotype"
-            # normal_style.font.size = Pt(10)
             
     # Save document
     document.save(output)
