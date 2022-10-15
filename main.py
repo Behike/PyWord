@@ -5,15 +5,12 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pathlib import Path
 
+input_folder = "0 - Input"
+output_folder = "0 - Output"
 
-destination_folder = "output"
 
-
-def formatDocument(file):
-    destination_folder = "output"
-    Path(destination_folder).mkdir(parents=True, exist_ok=True)
-
-    document = Document(file)
+def formatDocument(input, output):
+    document = Document(input)
 
     author = document.core_properties.author
     created = document.core_properties.created
@@ -100,14 +97,16 @@ def formatDocument(file):
 
             
     # Save document
-    document.save(destination_folder + "/" + file)
+    document.save(output)
 
 
 
-# Find all docx files and create subfolders in destination_folder
-files_list = list(Path().glob("**/*.docx"))
+# Find all docx files in input folder and recreate subfolders in output_folder
+files_list = list(Path().glob(input_folder + "/**/*.docx"))
 for file in files_list:
-    if not (file.parents[len(file.parents)-2].as_posix() == destination_folder):
-        print("Working on " + file.as_posix())
-        Path(destination_folder + "/" + file.parents[0].as_posix()).mkdir(parents=True, exist_ok=True)
-        formatDocument(file.as_posix())
+    input_file_path = file.as_posix()
+    output_file_path = output_folder + "/" + file.relative_to(*file.parts[:1]).as_posix()
+    if (file.parents[-2] != output_folder):
+        print("Working on " + input_file_path)
+        Path(output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
+        formatDocument(input_file_path, output_file_path)
