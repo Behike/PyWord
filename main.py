@@ -1,30 +1,18 @@
 from docx import Document
-from datetime import datetime
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Pt, RGBColor
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pathlib import Path
-import time
-
-input_folder = "0 - Input"
-output_folder = "0 - Output"
+from re import compile, IGNORECASE
+from config import *
 
 
 def formatDocument(input, output):
     document = Document(input)
 
-    author = document.core_properties.author
+    author_name = document.core_properties.author
     created = document.core_properties.created
     created_year = "" if type(created) == type(None) else created.year
-
-    copyright_text = "Copyright © " + str(created_year) + " " + author + "\nAll rights reserved. No parts of this publication may be reproduced, \
-    stored in a retrieval system, or transmitted in any form or by any means, electronic, mechanical, photocopying, \
-    recording, or otherwise, without the prior written permission of the copyright owner.\nThis book is sold subject \
-    to the condition that it shall not, by way of trade or otherwise, be lent, resold, hired out, or otherwise circulated \
-    without the publisher’s prior consent in any form of binding or cover other than that in which it is published and \
-    without a similar condition including this condition being imposed on the subsequent purchaser. Under no circumstances \
-    may any part of this book be photocopied for resale.\nThis is a work of fiction. Any similarity between the characters \
-    and situations within its pages and places or persons, living or dead, is unintentional and co-incidental."
 
     ## Clean document
     # Remove empty paragraphs
@@ -43,13 +31,13 @@ def formatDocument(input, output):
     else:
         title_style = styles.add_style('Title', WD_STYLE_TYPE.PARAGRAPH)
 
-    title_style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    title_style.paragraph_format.page_break_before = True
-    title_style.paragraph_format.space_before = Pt(45)
-    title_style.paragraph_format.space_after = Pt(45)
-    title_style.font.name = "Cambria"
-    title_style.font.size = Pt(36)
-    title_style.font.color.rgb = RGBColor(0x0,0x0,0x0)
+    title_style.paragraph_format.alignment = title_paragraph_alignment
+    title_style.paragraph_format.page_break_before = title_paragraph_page_break_before
+    title_style.paragraph_format.space_before = title_paragraph_space_before
+    title_style.paragraph_format.space_after = title_paragraph_space_after
+    title_style.font.name = title_font_name
+    title_style.font.size = title_font_size
+    title_style.font.color.rgb = title_font_color
 
     ## Format chapters
     if ('Heading 1' in document.styles):
@@ -57,13 +45,13 @@ def formatDocument(input, output):
     else:
         heading_style = styles.add_style('Heading 1', WD_STYLE_TYPE.PARAGRAPH)
 
-    heading_style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    heading_style.paragraph_format.page_break_before = True
-    heading_style.paragraph_format.space_before = Pt(45)
-    heading_style.paragraph_format.space_after = Pt(45)
-    heading_style.font.name = "Palatino Linotype"
-    heading_style.font.size = Pt(36)
-    heading_style.font.color.rgb = RGBColor(0x0,0x0,0x0)
+    heading_style.paragraph_format.alignment = heading_1_paragraph_alignment
+    heading_style.paragraph_format.page_break_before = heading_1_paragraph_page_break_before
+    heading_style.paragraph_format.space_before = heading_1_paragraph_space_before
+    heading_style.paragraph_format.space_after = heading_1_paragraph_space_after
+    heading_style.font.name = heading_1_font_name
+    heading_style.font.size = heading_1_font_size
+    heading_style.font.color.rgb = heading_1_font_color
 
     ## Format normal
     if ('Normal' in document.styles):
@@ -71,8 +59,8 @@ def formatDocument(input, output):
     else:
         normal_style = styles.add_style('Normal', WD_STYLE_TYPE.PARAGRAPH)
 
-    normal_style.font.name = "Palatino Linotype"
-    normal_style.font.size = Pt(10)
+    normal_style.font.name = normal_font_name
+    normal_style.font.size = normal_font_size
 
     ## Format subtitle
     if not ('Subtitle' in document.styles):
@@ -80,33 +68,42 @@ def formatDocument(input, output):
     else:
         subtitle_style = document.styles['Subtitle']
     
-    subtitle_style.base_style = document.styles['Normal']
-    subtitle_style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    subtitle_style.paragraph_format.space_after = Pt(45)
-    subtitle_style.font.name = "Palatino Linotype"
-    subtitle_style.font.size = Pt(9)
+    subtitle_style.base_style = document.styles[subtitle_inherits_from]
+    subtitle_style.paragraph_format.alignment = subtitle_paragraph_alignment
+    subtitle_style.paragraph_format.space_after = subtitle_paragraph_space_after
+    subtitle_style.font.name = subtitle_font_name
+    subtitle_style.font.size = subtitle_font_size
 
     for para in document.paragraphs:
-        if (para.text == ""):
-            delete_paragraph(para)
+        para_text = para.text.strip()
+        if (para_text != ""):        
+            # Replace chapter name number in letter with the corresponding number
+            if (any(map(para_text.upper().__contains__, chapter_dict.keys())) and len(para_text) <= CHAPTER_MAX_LENGTH):
+                for substring in chapter_dict.keys():
+                    if substring in para_text.upper():
+                        chapter_found = substring
+                if (chapter_found != ""):
+                    pattern = compile(chapter_found, IGNORECASE)
+                    para_text = pattern.sub(str(chapter_dict[chapter_found.upper()]), para_text)
+                    para.text = para_text
 
-        elif ((para.text[:7] == "Chapter") or
-                (para.text[:8] == "Prologue") or
-                (para.text[:8] == "Epilogue") or
-                (para.style.name == "Heading 1") or
-                (para.text[0].isnumeric() and (len(para.text) <= 75))):
-            para.style = heading_style
+            # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
+            if (((any(map(para_text.upper().__contains__, header_1_names_list)) or para_text[0].isnumeric()) and len(para_text) <= CHAPTER_MAX_LENGTH) or
+                    (para.style.name == "Heading 1")):
+                para.style = heading_style
 
-        elif (para.style.name == "Title"):
-            para.style = title_style
-            # Add sub-title
-            subtitle = document.add_paragraph(copyright_text, style='Subtitle')
-            subt = subtitle._p
-            p = para._p
-            p.addnext(subt)
+            elif (para.style.name == "Title"):
+                para.style = title_style
+                # Add sub-title
+                subtitle = document.add_paragraph(copyrightText(created_year, author_name), style='Subtitle')
+                subt = subtitle._p
+                p = para._p
+                p.addnext(subt)
 
+            else:
+                para.style = normal_style
         else:
-            para.style = normal_style
+            delete_paragraph(para)
             
     # Save document
     document.save(output)
