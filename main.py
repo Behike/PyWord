@@ -69,6 +69,9 @@ def formatDocument(input, output):
     
     normal_style = styles.add_style('NormalCustom', WD_STYLE_TYPE.PARAGRAPH)
 
+    normal_style.paragraph_format.first_line_indent = normal_paragraph_first_line_indent
+    normal_style.paragraph_format.left_indent = normal_paragraph_left_indent
+    normal_style.paragraph_format.right_indent = normal_paragraph_right_indent
     normal_style.paragraph_format.alignment = normal_paragraph_alignment
     normal_style.paragraph_format.page_break_before = normal_paragraph_page_break_before
     normal_style.font.name = normal_font_name
@@ -89,6 +92,10 @@ def formatDocument(input, output):
 
     for para in document.paragraphs:
         para_text = para.text.strip()
+
+        para.paragraph_format.first_line_indent = None
+        para.paragraph_format.left_indent = None
+        para.paragraph_format.right_indent = None
 
         if (para_text != ""):
             if (para.style.name == "Title" and not title_added):
