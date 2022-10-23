@@ -30,9 +30,9 @@ def formatDocument(input, output):
 
     ## Format title
     if ('Title' in document.styles):
-        title_style = document.styles['Title']
-    else:
-        title_style = styles.add_style('Title', WD_STYLE_TYPE.PARAGRAPH)
+        document.styles['Title'].delete()
+
+    title_style = styles.add_style('Title', WD_STYLE_TYPE.PARAGRAPH)
 
     title_style.paragraph_format.alignment = title_paragraph_alignment
     title_style.paragraph_format.page_break_before = title_paragraph_page_break_before
@@ -58,9 +58,9 @@ def formatDocument(input, output):
 
     ## Format normal
     if ('NormalCustom' in document.styles):
-        normal_style = document.styles['NormalCustom']
-    else:
-        normal_style = styles.add_style('NormalCustom', WD_STYLE_TYPE.PARAGRAPH)
+        document.styles['NormalCustom'].delete()
+    
+    normal_style = styles.add_style('NormalCustom', WD_STYLE_TYPE.PARAGRAPH)
 
     normal_style.paragraph_format.alignment = normal_paragraph_alignment
     normal_style.paragraph_format.page_break_before = normal_paragraph_page_break_before
@@ -70,9 +70,9 @@ def formatDocument(input, output):
 
     ## Format subtitle
     if ('Subtitle' in document.styles):
-        subtitle_style = document.styles['Subtitle']
-    else:
-        subtitle_style = styles.add_style('Subtitle', WD_STYLE_TYPE.PARAGRAPH)
+        document.styles['Subtitle'].delete()
+
+    subtitle_style = styles.add_style('Subtitle', WD_STYLE_TYPE.PARAGRAPH)
     
     subtitle_style.base_style = document.styles[subtitle_inherits_from]
     subtitle_style.paragraph_format.alignment = subtitle_paragraph_alignment
@@ -124,15 +124,21 @@ def formatDocument(input, output):
                         if (chapter_number_found != ""):
                             pattern = compile(chapter_number_found, IGNORECASE)
                             para_text = pattern.sub(str(number_dict[chapter_number_found.upper()]), para_text)
-                            para_text = para_text[len(header_1_keyword_first[0])+1:]
-                            print(para_text)
+                        
+                    if (len(para_text.split()) >= 2 and para_text.split()[1].isdigit()):
+                        para_text = para_text[len(header_1_keyword_first[0])+1:]
 
                     para.style = heading_style
+
+                # If no conditions were met, apply normal style
+                if (para.style != heading_style):
+                    para.style = normal_style
 
             else:
                 para.style = normal_style
             
             para.text = para_text
+
         else:
             delete_paragraph(para)
 
@@ -162,4 +168,4 @@ for file in files_list:
             # print("    /!\ " + input_file_path + " failed /!\ \n")
 
 print("\n========== Finished ==========")
-variable = input('Press anything to exit')
+variable = input('Press enter to exit')
