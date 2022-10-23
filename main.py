@@ -145,6 +145,12 @@ def formatDocument(input, output):
         # word_count = word_count + len(findall(r'\w+', para_text))
         word_count = word_count + len(para_text.split())
             
+    for section in document.sections:
+        if (section.header):
+            section.header.is_linked_to_previous = True
+        if (section.footer):
+            section.footer.is_linked_to_previous = True
+
     if (document.paragraphs and not title_added):
         document.paragraphs[0].insert_paragraph_before(file.name.replace(".docx", ""), style='Title')
 
