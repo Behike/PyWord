@@ -80,6 +80,8 @@ def formatDocument(input, output):
     subtitle_style.font.name = subtitle_font_name
     subtitle_style.font.size = subtitle_font_size
 
+    title_added = False
+
     for para in document.paragraphs:
         para_text = para.text.strip()
 
@@ -91,6 +93,7 @@ def formatDocument(input, output):
                 subt = subtitle._p
                 p = para._p
                 p.addnext(subt)
+                title_added = True
 
             # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
             elif ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
@@ -136,6 +139,9 @@ def formatDocument(input, output):
         # word_count = word_count + len(findall(r'\w+', para_text))
         word_count = word_count + len(para_text.split())
             
+    if (document.paragraphs and not title_added):
+        document.paragraphs[0].insert_paragraph_before(file.name.replace(".docx", ""), style='Title')
+
     # Save document
     document.save(output.format(word_count=word_count))
 
