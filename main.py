@@ -3,11 +3,14 @@ from docx.shared import Pt, RGBColor
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pathlib import Path
-from re import compile, IGNORECASE
+from re import compile, search, escape, findall, IGNORECASE
 from config import *
 
+word_count = 0
 
 def formatDocument(input, output):
+    global word_count
+
     document = Document(input)
 
     author_name = document.core_properties.author
@@ -104,24 +107,28 @@ def formatDocument(input, output):
                 para.style = normal_style
         else:
             delete_paragraph(para)
+
+        # word_count = word_count + len(findall(r'\w+', para_text))
+        word_count = word_count + len(para_text.split())
             
     # Save document
-    document.save(output)
-
+    document.save(output.format(word_count=word_count))
 
 
 # Find all docx files in input folder and recreate subfolders in output_folder
 files_list = list(Path().glob(input_folder + "/**/*.docx"))
 for file in files_list:
     input_file_path = file.as_posix()
-    output_file_path = output_folder + "/" + file.relative_to(*file.parts[:1]).as_posix()
+    temp_output_file_path = f"{output_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
     if (file.parents[-2] != output_folder):
         print("Working on " + input_file_path)
-        Path(output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
+        Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
         # try:
+        output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
         formatDocument(input_file_path, output_file_path)
+        word_count = 0
         # except:
             # print("    /!\ " + input_file_path + " failed /!\ \n")
-            
+
 print("\n========== Finished ==========")
 variable = input('Press anything to exit')
