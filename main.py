@@ -10,6 +10,7 @@ word_count = 0
 
 def formatDocument(input, output):
     global word_count
+    title_added = False
 
     document = Document(input)
 
@@ -19,11 +20,17 @@ def formatDocument(input, output):
 
     ## Clean document
     # Remove empty paragraphs
-    def delete_paragraph(paragraph):
+    def deleteParagraph(paragraph):
         p = paragraph._element
         p.getparent().remove(p)
         p._p = p._element = None
 
+    # Add subtitle after title
+    def addSubtitle(para):
+        subtitle = document.add_paragraph(copyrightText(created_year, author_name), style='Subtitle')
+        subt = subtitle._p
+        p = para._p
+        p.addnext(subt)
 
     ### Format styles
     styles = document.styles
@@ -80,19 +87,13 @@ def formatDocument(input, output):
     subtitle_style.font.name = subtitle_font_name
     subtitle_style.font.size = subtitle_font_size
 
-    title_added = False
-
     for para in document.paragraphs:
         para_text = para.text.strip()
 
         if (para_text != ""):
-            if (para.style.name == "Title"):
+            if (para.style.name == "Title" and not title_added):
                 para.style = title_style
-                # Add sub-title
-                subtitle = document.add_paragraph(copyrightText(created_year, author_name), style='Subtitle')
-                subt = subtitle._p
-                p = para._p
-                p.addnext(subt)
+                addSubtitle(para)
                 title_added = True
 
             # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
@@ -140,7 +141,7 @@ def formatDocument(input, output):
             para.text = para_text
 
         else:
-            delete_paragraph(para)
+            deleteParagraph(para)
 
         # word_count = word_count + len(findall(r'\w+', para_text))
         word_count = word_count + len(para_text.split())
@@ -153,6 +154,8 @@ def formatDocument(input, output):
 
     if (document.paragraphs and not title_added):
         document.paragraphs[0].insert_paragraph_before(file.name.replace(".docx", ""), style='Title')
+        addSubtitle(document.paragraphs[0])
+        title_added = True
 
     # Save document
     document.save(output.format(word_count=word_count))
