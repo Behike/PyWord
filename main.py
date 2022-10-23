@@ -44,9 +44,9 @@ def formatDocument(input, output):
 
     ## Format chapters
     if ('Heading 1' in document.styles):
-        heading_style = document.styles['Heading 1']
-    else:
-        heading_style = styles.add_style('Heading 1', WD_STYLE_TYPE.PARAGRAPH)
+        document.styles['Heading 1'].delete()
+
+    heading_style = styles.add_style('Heading 1', WD_STYLE_TYPE.PARAGRAPH)
 
     heading_style.paragraph_format.alignment = heading_1_paragraph_alignment
     heading_style.paragraph_format.page_break_before = heading_1_paragraph_page_break_before
@@ -57,19 +57,22 @@ def formatDocument(input, output):
     heading_style.font.color.rgb = heading_1_font_color
 
     ## Format normal
-    if ('Normal' in document.styles):
-        normal_style = document.styles['Normal']
+    if ('NormalCustom' in document.styles):
+        normal_style = document.styles['NormalCustom']
     else:
-        normal_style = styles.add_style('Normal', WD_STYLE_TYPE.PARAGRAPH)
+        normal_style = styles.add_style('NormalCustom', WD_STYLE_TYPE.PARAGRAPH)
 
+    normal_style.paragraph_format.alignment = normal_paragraph_alignment
+    normal_style.paragraph_format.page_break_before = normal_paragraph_page_break_before
     normal_style.font.name = normal_font_name
     normal_style.font.size = normal_font_size
+    normal_style.font.color.rgb = normal_font_color
 
     ## Format subtitle
-    if not ('Subtitle' in document.styles):
-        subtitle_style = styles.add_style('Subtitle', WD_STYLE_TYPE.PARAGRAPH)
-    else:
+    if ('Subtitle' in document.styles):
         subtitle_style = document.styles['Subtitle']
+    else:
+        subtitle_style = styles.add_style('Subtitle', WD_STYLE_TYPE.PARAGRAPH)
     
     subtitle_style.base_style = document.styles[subtitle_inherits_from]
     subtitle_style.paragraph_format.alignment = subtitle_paragraph_alignment
@@ -79,23 +82,9 @@ def formatDocument(input, output):
 
     for para in document.paragraphs:
         para_text = para.text.strip()
-        if (para_text != ""):        
-            # Replace chapter name number in letter with the corresponding number
-            if (any(map(para_text.upper().__contains__, chapter_dict.keys())) and len(para_text) <= CHAPTER_MAX_LENGTH):
-                for substring in chapter_dict.keys():
-                    if substring in para_text.upper():
-                        chapter_found = substring
-                if (chapter_found != ""):
-                    pattern = compile(chapter_found, IGNORECASE)
-                    para_text = pattern.sub(str(chapter_dict[chapter_found.upper()]), para_text)
-                    para.text = para_text
 
-            # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
-            if (((any(map(para_text.upper().__contains__, header_1_names_list)) or para_text[0].isnumeric()) and len(para_text) <= CHAPTER_MAX_LENGTH) or
-                    (para.style.name == "Heading 1")):
-                para.style = heading_style
-
-            elif (para.style.name == "Title"):
+        if (para_text != ""):
+            if (para.style.name == "Title"):
                 para.style = title_style
                 # Add sub-title
                 subtitle = document.add_paragraph(copyrightText(created_year, author_name), style='Subtitle')
@@ -103,8 +92,44 @@ def formatDocument(input, output):
                 p = para._p
                 p.addnext(subt)
 
+            # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
+            elif ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
+                # List of header 1 keywords present at the beginning of the text (empty or one word only)
+                header_1_keyword_first = [ele for ele in header_1_names_list if para_text.upper().startswith(ele)]
+                # List of digits in text
+                digit = [ele for ele in para_text if ele.isdigit()]
+                # List of letter numbers (whole word only)
+                # re.search(r"\b" + re.escape(ele) + r"\b", para_text.upper())
+                letter_number = [ele for ele in number_dict.keys() if search(r"\b" + escape(ele) + r"\b", para_text.upper())]
+
+                # If whole text is a number
+                if (para_text.isdigit()):
+                    para.style = heading_style
+
+                # If whole text is a number (in letter) convert it to number
+                if (letter_number and para_text == letter_number[0]):
+                    para_text = str(number_dict[letter_number[0]])
+                    para.style = heading_style
+
+                # Replace chapter name number in letter with the corresponding number
+                elif (header_1_keyword_first):
+                    # if (any(map(para_text.upper().__contains__, number_dict.keys()))):
+                    if (letter_number):
+                        for substring in number_dict.keys():
+                            if substring in para_text.upper():
+                                chapter_number_found = substring
+                        if (chapter_number_found != ""):
+                            pattern = compile(chapter_number_found, IGNORECASE)
+                            para_text = pattern.sub(str(number_dict[chapter_number_found.upper()]), para_text)
+                            para_text = para_text[len(header_1_keyword_first[0])+1:]
+                            print(para_text)
+
+                    para.style = heading_style
+
             else:
                 para.style = normal_style
+            
+            para.text = para_text
         else:
             delete_paragraph(para)
 

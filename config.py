@@ -36,8 +36,11 @@ heading_1_font_size = Pt(36)
 heading_1_font_color = RGBColor(0x0,0x0,0x0)
 
 # Normal
+normal_paragraph_alignment = WD_ALIGN_PARAGRAPH.LEFT
+normal_paragraph_page_break_before = False
 normal_font_name = "Palatino Linotype"
 normal_font_size = Pt(10)
+normal_font_color = RGBColor(0x0,0x0,0x0)
 
 # Subtitle (inherits other properties from Normal)
 subtitle_inherits_from = "Normal"
@@ -59,7 +62,7 @@ may any part of this book be photocopied for resale.\nThis is a work of fiction.
 and situations within its pages and places or persons, living or dead, is unintentional and co-incidental."
     return copyright_text
 
-chapter_dict = {
+number_dict = {
     "ONE": 1,
     "TWO": 2,
     "THREE": 3,
