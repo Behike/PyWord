@@ -74,6 +74,8 @@ def formatDocument(input, output):
     normal_style.paragraph_format.left_indent = normal_paragraph_left_indent
     normal_style.paragraph_format.right_indent = normal_paragraph_right_indent
     normal_style.paragraph_format.alignment = normal_paragraph_alignment
+    normal_style.paragraph_format.space_before = normal_paragraph_space_before
+    normal_style.paragraph_format.space_after = normal_paragraph_space_after
     normal_style.paragraph_format.page_break_before = normal_paragraph_page_break_before
     normal_style.font.name = normal_font_name
     normal_style.font.size = normal_font_size

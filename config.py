@@ -36,10 +36,12 @@ heading_1_font_size = Pt(36)
 heading_1_font_color = RGBColor(0x0,0x0,0x0)
 
 # Normal
+normal_paragraph_alignment = WD_ALIGN_PARAGRAPH.LEFT
 normal_paragraph_first_line_indent = Pt(0)
 normal_paragraph_left_indent = Pt(0)
 normal_paragraph_right_indent = Pt(0)
-normal_paragraph_alignment = WD_ALIGN_PARAGRAPH.LEFT
+normal_paragraph_space_before = Pt(0)
+normal_paragraph_space_after = Pt(6)
 normal_paragraph_page_break_before = False
 normal_font_name = "Palatino Linotype"
 normal_font_size = Pt(10)
