@@ -1,7 +1,7 @@
 from docx import Document
-from docx.shared import Pt, RGBColor
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.section import WD_ORIENTATION
 from pathlib import Path
 from re import compile, search, escape, findall, IGNORECASE
 from config import *
@@ -113,7 +113,6 @@ def formatDocument(input, output):
                 # List of digits in text
                 digit = [ele for ele in para_text if ele.isdigit()]
                 # List of letter numbers (whole word only)
-                # re.search(r"\b" + re.escape(ele) + r"\b", para_text.upper())
                 letter_number = [ele for ele in number_dict.keys() if search(r"\b" + escape(ele) + r"\b", para_text.upper())]
 
                 # If whole text is a number
@@ -127,7 +126,6 @@ def formatDocument(input, output):
 
                 # Replace chapter name number in letter with the corresponding number
                 elif (header_1_keyword_first):
-                    # if (any(map(para_text.upper().__contains__, number_dict.keys()))):
                     if (letter_number):
                         for substring in number_dict.keys():
                             if substring in para_text.upper():
@@ -153,14 +151,25 @@ def formatDocument(input, output):
         else:
             deleteParagraph(para)
 
-        # word_count = word_count + len(findall(r'\w+', para_text))
         word_count = word_count + len(para_text.split())
             
+    # Document sections iteration
+    # Remove headers/footers and set correct page orientation/format
     for section in document.sections:
-        if (section.header):
+        if (section.header and not keep_headers):
             section.header.is_linked_to_previous = True
-        if (section.footer):
+        if (section.footer and not keep_footers):
             section.footer.is_linked_to_previous = True
+        if (section.orientation != page_orientation):
+            print("Switching page orientation")
+            section.orientation = page_orientation
+        section.page_height = page_height
+        section.page_width = page_width
+
+        section.top_margin = top_margin
+        section.bottom_margin = bottom_margin
+        section.left_margin = left_margin
+        section.right_margin = right_margin
 
     if (document.paragraphs and not title_added):
         document.paragraphs[0].insert_paragraph_before(file.name.replace(".docx", ""), style='Title')

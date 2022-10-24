@@ -1,6 +1,7 @@
-from docx.shared import Pt, RGBColor
+from docx.shared import Pt, Mm, Inches, RGBColor
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.section import WD_ORIENTATION
 
 input_folder = "0 - Input"
 output_folder = "0 - Output"
@@ -14,7 +15,6 @@ header_1_names_list = [
     "EPILOGUE",
     "PROLOGUE"
 ]
-
     
 ## Styles definition, cannot add new properties from here for now
 # Title
@@ -54,7 +54,18 @@ subtitle_paragraph_space_after = Pt(45)
 subtitle_font_name = "Palatino Linotype"
 subtitle_font_size = Pt(9)
 
-
+## Section configurations
+# Page
+page_orientation = WD_ORIENTATION.PORTRAIT
+page_width = Mm(210)
+page_height = Mm(297)
+top_margin = Inches(1)
+bottom_margin = Inches(1)
+left_margin = Inches(1)
+right_margin = Inches(1)
+# Header/Footer
+keep_headers = False
+keep_footers = False
 
 def copyrightText(created_year, author):
     copyright_text = "Copyright © " + str(created_year) + " " + author + "\nAll rights reserved. No parts of this publication may be reproduced, \
