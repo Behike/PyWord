@@ -5,6 +5,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pathlib import Path
 from re import compile, search, escape, findall, IGNORECASE
 from config import *
+import traceback
 
 word_count = 0
 
@@ -176,12 +177,13 @@ for file in files_list:
     if (file.parents[-2] != output_folder):
         print("Working on " + input_file_path)
         Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
-        # try:
-        output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
-        formatDocument(input_file_path, output_file_path)
-        word_count = 0
-        # except:
-            # print("    /!\ " + input_file_path + " failed /!\ \n")
+        try:
+            output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
+            formatDocument(input_file_path, output_file_path)
+            word_count = 0
+        except Exception:
+            traceback.print_exc()
+            print("    /!\ " + input_file_path + " failed /!\ \n")
 
 print("\n========== Finished ==========")
 variable = input('Press enter to exit')
