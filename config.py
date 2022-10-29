@@ -15,6 +15,13 @@ header_1_names_list = [
     "EPILOGUE",
     "PROLOGUE"
 ]
+
+capitalize_words_list = [
+    "of",
+    "in",
+    "and",
+    "a"
+]
     
 ## Styles definition, cannot add new properties from here for now
 # Title

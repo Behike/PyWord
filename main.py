@@ -33,11 +33,22 @@ def formatDocument(input, output):
         p = para._p
         p.addnext(subt)
 
+    def capitalizeSentences(text):
+        text_list = text.split()
+        for i in range(len(text_list)):
+            text_list[i] = text_list[i].lower()
+            if (not text_list[i] in capitalize_words_list or i == 0):
+                text_list[i] = text_list[i].capitalize()
+
+        text = ' '.join(text_list)
+        return text
+
     ### Format styles
     styles = document.styles
 
     ## Format title
     if ('Title' in document.styles):
+        print("Deleting style Title")
         document.styles['Title'].delete()
 
     title_style = styles.add_style('Title', WD_STYLE_TYPE.PARAGRAPH)
@@ -103,6 +114,7 @@ def formatDocument(input, output):
         if (para_text != ""):
             if (para.style.name == "Title" and not title_added):
                 para.style = title_style
+                para_text = capitalizeSentences(para_text)
                 addSubtitle(para)
                 title_added = True
 
@@ -142,6 +154,8 @@ def formatDocument(input, output):
                 # If no conditions were met, apply normal style
                 if (para.style != heading_style):
                     para.style = normal_style
+                else:
+                    para_text = capitalizeSentences(para_text)
 
             else:
                 para.style = normal_style
