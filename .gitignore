@@ -5,6 +5,7 @@
 *.png
 *.pdf
 *.gif
+*.epub
 
 test.py
 
