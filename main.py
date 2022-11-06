@@ -150,7 +150,7 @@ def formatDocument(input, output):
                     header_1_keyword_first, digit, letter_number = [], [], []
 
                 # If whole text is a number (in letter) convert it to number
-                if (letter_number and para_text == letter_number[0]):
+                if (letter_number and para_text.upper() == letter_number[0]):
                     para.style = heading_style
                     para_text = str(number_dict[letter_number[0]])
 
