@@ -3,7 +3,7 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.section import WD_ORIENTATION
 from pathlib import Path
-from re import compile, search, escape, findall, IGNORECASE
+from re import compile, search, escape, match, IGNORECASE
 from config import *
 import traceback
 
@@ -120,36 +120,54 @@ def formatDocument(input, output):
 
             # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
             elif ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
+                ## Find elements in paragraph text
                 # List of header 1 keywords present at the beginning of the text (empty or one word only)
                 header_1_keyword_first = [ele for ele in header_1_names_list if para_text.upper().startswith(ele)]
-                # List of digits in text
-                digit = [ele for ele in para_text if ele.isdigit()]
-                # List of letter numbers (whole word only)
-                letter_number = [ele for ele in number_dict.keys() if search(r"\b" + escape(ele) + r"\b", para_text.upper())]
-
+                
+                if (header_1_keyword_first and len(para_text.split()) >= 2):
+                    # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
+                    letter_number = [ele for ele in number_dict.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[1])]   
+                    # List of first digits in text (with . and : characters stuck to it)
+                    digit = [ele for ele in para_text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[1])]             
+                else:
+                    # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
+                    letter_number = [ele for ele in number_dict.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[0])]
+                    # List of first digits in text (with . and : characters stuck to it)
+                    digit = [ele for ele in para_text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[0])]
+                
                 # If whole text is a number
-                if (para_text.isdigit()):
+                if (digit and para_text == digit):
                     para.style = heading_style
+
+                # If there is a chapter name remove header_1_keyword and chapter number
+                if ((not header_1_keyword_first) and (letter_number or digit) and len(para_text.split()) > 1):
+                    para.style = heading_style
+                    para_text = " ".join(para_text.split()[1:])
+                    header_1_keyword_first, digit, letter_number = [], [], []
+                elif (header_1_keyword_first and (letter_number or digit) and len(para_text.split()) > 2):
+                    para.style = heading_style
+                    para_text = " ".join(para_text.split()[2:])
+                    header_1_keyword_first, digit, letter_number = [], [], []
 
                 # If whole text is a number (in letter) convert it to number
                 if (letter_number and para_text == letter_number[0]):
-                    para_text = str(number_dict[letter_number[0]])
                     para.style = heading_style
+                    para_text = str(number_dict[letter_number[0]])
 
                 # Replace chapter name number in letter with the corresponding number
                 elif (header_1_keyword_first):
+                    para.style = heading_style
+
                     if (letter_number):
                         for substring in number_dict.keys():
                             if substring in para_text.upper():
                                 chapter_number_found = substring
-                        if (chapter_number_found != ""):
+                        if (chapter_number_found):
                             pattern = compile(chapter_number_found, IGNORECASE)
                             para_text = pattern.sub(str(number_dict[chapter_number_found.upper()]), para_text)
                         
                     if (len(para_text.split()) >= 2 and para_text.split()[1].isdigit()):
                         para_text = para_text[len(header_1_keyword_first[0])+1:]
-
-                    para.style = heading_style
 
                 # If no conditions were met, apply normal style
                 if (para.style != heading_style):
