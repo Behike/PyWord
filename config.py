@@ -32,6 +32,9 @@ title_paragraph_space_after = Pt(45)
 title_font_name = "Cambria"
 title_font_size = Pt(36)
 title_font_color = RGBColor(0x0,0x0,0x0)
+# title_font_bold = False
+# title_font_italic = False
+title_font_underline = False
 
 # Heading 1
 heading_1_paragraph_alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -41,6 +44,9 @@ heading_1_paragraph_space_after = Pt(45)
 heading_1_font_name = "Palatino Linotype"
 heading_1_font_size = Pt(36)
 heading_1_font_color = RGBColor(0x0,0x0,0x0)
+# heading_1_font_bold = False
+# heading_1_font_italic = False
+heading_1_font_underline = False
 
 # Normal
 normal_paragraph_alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -53,6 +59,9 @@ normal_paragraph_page_break_before = False
 normal_font_name = "Palatino Linotype"
 normal_font_size = Pt(10)
 normal_font_color = RGBColor(0x0,0x0,0x0)
+# normal_font_bold = False
+# normal_font_italic = False
+normal_font_underline = False
 
 # Subtitle (inherits other properties from Normal)
 subtitle_inherits_from = "Normal"
@@ -60,6 +69,9 @@ subtitle_paragraph_alignment = WD_ALIGN_PARAGRAPH.CENTER
 subtitle_paragraph_space_after = Pt(45)
 subtitle_font_name = "Palatino Linotype"
 subtitle_font_size = Pt(9)
+# subtitle_font_bold = False
+# subtitle_font_italic = False
+subtitle_font_underline = False
 
 ## Section configurations
 # Page
