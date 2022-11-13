@@ -60,6 +60,9 @@ def formatDocument(input, output):
     title_style.font.name = title_font_name
     title_style.font.size = title_font_size
     title_style.font.color.rgb = title_font_color
+    # title_style.font.bold = title_font_bold
+    # title_style.font.italic = title_font_italic
+    title_style.font.underline = title_font_underline
 
     ## Format chapters
     if ('Heading 1' in document.styles):
@@ -74,6 +77,9 @@ def formatDocument(input, output):
     heading_style.font.name = heading_1_font_name
     heading_style.font.size = heading_1_font_size
     heading_style.font.color.rgb = heading_1_font_color
+    # heading_style.font.bold = heading_1_font_bold
+    # heading_style.font.italic = heading_1_font_italic
+    heading_style.font.underline = heading_1_font_underline
 
     ## Format normal
     if ('NormalCustom' in document.styles):
@@ -91,6 +97,9 @@ def formatDocument(input, output):
     normal_style.font.name = normal_font_name
     normal_style.font.size = normal_font_size
     normal_style.font.color.rgb = normal_font_color
+    # normal_style.font.bold = normal_font_bold
+    # normal_style.font.italic = normal_font_italic
+    normal_style.font.underline = normal_font_underline
 
     ## Format subtitle
     if ('Subtitle' in document.styles):
@@ -103,7 +112,9 @@ def formatDocument(input, output):
     subtitle_style.paragraph_format.space_after = subtitle_paragraph_space_after
     subtitle_style.font.name = subtitle_font_name
     subtitle_style.font.size = subtitle_font_size
-
+    # subtitle_style.font.bold = subtitle_font_bold
+    # subtitle_style.font.italic = subtitle_font_italic
+    subtitle_style.font.underline = subtitle_font_underline
     for para in document.paragraphs:
         para_text = para.text.strip()
 
