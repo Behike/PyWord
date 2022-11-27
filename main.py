@@ -258,7 +258,7 @@ for file in files_list:
     input_file_path = file.as_posix()
     temp_output_file_path = f"{output_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
     if (file.parents[-2] != output_folder):
-        logging.info("Working on %s", input_file_path)
+        logging.info("\nWorking on %s", input_file_path)
         Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
         try:
             output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
