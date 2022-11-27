@@ -1,17 +1,19 @@
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.section import WD_ORIENTATION
 from pathlib import Path
 from re import compile, search, escape, match, IGNORECASE
 from config import *
-import traceback
+import traceback, logging
+
+logging.basicConfig(format='%(message)s', level=debug_level)
 
 word_count = 0
 
 def formatDocument(input, output):
     global word_count
     title_added = False
+    file_name = file.name.replace(".docx", "").strip()
 
     document = Document(input)
 
@@ -27,10 +29,10 @@ def formatDocument(input, output):
         p._p = p._element = None
 
     # Add subtitle after title
-    def addSubtitle(para):
+    def addSubtitle(paragraph):
         subtitle = document.add_paragraph(copyrightText(created_year, author_name), style='Subtitle')
         subt = subtitle._p
-        p = para._p
+        p = paragraph._p
         p.addnext(subt)
 
     def capitalizeSentences(text):
@@ -137,6 +139,7 @@ def formatDocument(input, output):
             if (not title_added):
                 if (para.style.name != title_style.name):
                     para_text = file_name
+                    logging.debug("[%s] [Title] Set \"%s\" style to Title", file_name, para_text)
 
                 para.style = title_style
                 para_text = capitalizeSentences(para_text)
@@ -148,6 +151,7 @@ def formatDocument(input, output):
             elif (para.style.name == title_style.name):
                 para.style = heading_style
                 para.text = para_text
+                logging.debug("[%s] [Style is Title] Set \"%s\" style to Heading 1", file_name, para_text)
 
             # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
             if ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
@@ -170,6 +174,7 @@ def formatDocument(input, output):
                 if (digit and para_text == digit):
                     para.style = heading_style
                     para.text = para_text
+                    logging.debug("[%s] [Text = Number] Replaced \"%s\" with \"%s\"", file_name, para_text_old, para_text)
 
                 # If there is a chapter name remove header_1_keyword and chapter number
                 if ((not header_1_keyword_first) and (letter_number or digit) and len(para_text.split()) > 1):
@@ -177,21 +182,25 @@ def formatDocument(input, output):
                     para_text = " ".join(para_text.split()[1:])
                     header_1_keyword_first, digit, letter_number = [], [], []
                     para.text = para_text
+                    logging.debug("[%s] [Number] Replaced \"%s\" with \"%s\"", file_name, para_text_old, para_text)
                 elif (header_1_keyword_first and (letter_number or digit) and len(para_text.split()) > 2):
                     para.style = heading_style
                     para_text = " ".join(para_text.split()[2:])
                     header_1_keyword_first, digit, letter_number = [], [], []
                     para.text = para_text
+                    logging.debug("[%s] [Header keyword + number] Replaced \"%s\" with \"%s\"", file_name, para_text_old, para_text)
 
                 # If whole text is a number (in letter) convert it to number
                 if (letter_number and para_text.upper() == letter_number[0]):
                     para.style = heading_style
                     para_text = str(number_dict[letter_number[0]])
                     para.text = para_text
+                    logging.debug("[%s] [Text = Letter number] Replaced \"%s\" with \"%s\"", file_name, para_text_old, para_text)
 
                 # Replace chapter name number in letter with the corresponding number
                 elif (header_1_keyword_first):
                     para.style = heading_style
+                    logging.debug("[%s] Set \"%s\" style to Heading 1", file_name, para_text)
 
                     if (letter_number):
                         for substring in number_dict.keys():
@@ -229,7 +238,7 @@ def formatDocument(input, output):
         if (section.footer and not keep_footers):
             section.footer.is_linked_to_previous = True
         if (section.orientation != page_orientation):
-            print("Switching page orientation")
+            logging.info("[%s] Switching page orientation", file_name)
             section.orientation = page_orientation
         section.page_height = page_height
         section.page_width = page_width
@@ -249,7 +258,7 @@ for file in files_list:
     input_file_path = file.as_posix()
     temp_output_file_path = f"{output_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
     if (file.parents[-2] != output_folder):
-        print("Working on " + input_file_path)
+        logging.info("Working on %s", input_file_path)
         Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
         try:
             output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
@@ -257,7 +266,7 @@ for file in files_list:
             word_count = 0
         except Exception:
             traceback.print_exc()
-            print("    /!\ " + input_file_path + " failed /!\ \n")
+            logging.error("    /!\ %s failed /!\ \n", input_file_path)
 
-print("\n========== Finished ==========")
+logging.info("\n========== Finished ==========")
 variable = input('Press enter to exit')
