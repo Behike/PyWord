@@ -130,6 +130,10 @@ def formatDocument(input, output):
     else:
         subtitle_style = styles.add_style('Subtitle', WD_STYLE_TYPE.PARAGRAPH)
     
+    normal_style.hidden = False
+    normal_style.quick_style = True
+    normal_style.priority = 3
+
     subtitle_style.base_style = document.styles[subtitle_inherits_from]
     subtitle_style.paragraph_format.alignment = subtitle_paragraph_alignment
     subtitle_style.paragraph_format.space_after = subtitle_paragraph_space_after
