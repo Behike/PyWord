@@ -59,10 +59,14 @@ def formatDocument(input, output):
     styles = document.styles
 
     ## Format title
-    while ('Title' in document.styles):
-        document.styles['Title'].delete()
-    
-    title_style = styles.add_style('Title', WD_STYLE_TYPE.PARAGRAPH)
+    if ('Title' in document.styles):
+        title_style = document.styles['Title']
+    else:
+        title_style = styles.add_style('Title', WD_STYLE_TYPE.PARAGRAPH)    
+
+    title_style.hidden = False
+    title_style.quick_style = True
+    title_style.priority = 1
 
     title_style.paragraph_format.alignment = title_paragraph_alignment
     title_style.paragraph_format.page_break_before = title_paragraph_page_break_before
@@ -75,11 +79,15 @@ def formatDocument(input, output):
     title_style.font.italic = title_font_italic
     title_style.font.underline = title_font_underline
 
-    ## Format chapters
-    while ('Heading 1' in document.styles):
-        document.styles['Heading 1'].delete()
+    ## Format chapters    
+    if ('Heading 1' in document.styles):
+        heading_style = document.styles['Heading 1']
+    else:
+        heading_style = styles.add_style('Heading 1', WD_STYLE_TYPE.PARAGRAPH)
 
-    heading_style = styles.add_style('Heading 1', WD_STYLE_TYPE.PARAGRAPH)
+    heading_style.hidden = False
+    heading_style.quick_style = True
+    heading_style.priority = 2
 
     heading_style.paragraph_format.alignment = heading_1_paragraph_alignment
     heading_style.paragraph_format.page_break_before = heading_1_paragraph_page_break_before
@@ -97,6 +105,10 @@ def formatDocument(input, output):
         normal_style = document.styles['Normal']
     else:
         normal_style = styles.add_style('Normal', WD_STYLE_TYPE.PARAGRAPH)
+
+    normal_style.hidden = False
+    normal_style.quick_style = True
+    normal_style.priority = 0
 
     normal_style.paragraph_format.first_line_indent = normal_paragraph_first_line_indent
     normal_style.paragraph_format.left_indent = normal_paragraph_left_indent
@@ -263,6 +275,8 @@ for file in files_list:
         try:
             output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
             formatDocument(input_file_path, output_file_path)
+            if (word_count == 0):
+                logging.warning("No words were detected in %s (document might be a table)\n", file.name.replace("docx", ""))
             word_count = 0
         except Exception:
             traceback.print_exc()

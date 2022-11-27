@@ -6,6 +6,7 @@ from docx.enum.section import WD_ORIENTATION
 # Choose log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 debug_level = "DEBUG"
 
+# Folder where to search for/save files
 input_folder = "0 - Input"
 output_folder = "0 - Output"
 
