@@ -127,23 +127,30 @@ def formatDocument(input, output):
     
     for para in document.paragraphs:
         para_text = para.text.strip()
+        para_text_old = para_text
 
         para.paragraph_format.first_line_indent = None
         para.paragraph_format.left_indent = None
         para.paragraph_format.right_indent = None
 
         if (para_text != ""):
-            if (para.style.name == title_style.name and not title_added):
+            if (not title_added):
+                if (para.style.name != title_style.name):
+                    para_text = file_name
+
                 para.style = title_style
                 para_text = capitalizeSentences(para_text)
                 addSubtitle(para)
                 title_added = True
+                para.text = para_text
+
             # Some people use Title instead of Heading 1
-            elif (para.style.name == title_style.name and title_added):
+            elif (para.style.name == title_style.name):
                 para.style = heading_style
+                para.text = para_text
 
             # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
-            elif ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
+            if ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
                 ## Find elements in paragraph text
                 # List of header 1 keywords present at the beginning of the text (empty or one word only)
                 header_1_keyword_first = [ele for ele in header_1_names_list if para_text.upper().startswith(ele)]
@@ -162,21 +169,25 @@ def formatDocument(input, output):
                 # If whole text is a number
                 if (digit and para_text == digit):
                     para.style = heading_style
+                    para.text = para_text
 
                 # If there is a chapter name remove header_1_keyword and chapter number
                 if ((not header_1_keyword_first) and (letter_number or digit) and len(para_text.split()) > 1):
                     para.style = heading_style
                     para_text = " ".join(para_text.split()[1:])
                     header_1_keyword_first, digit, letter_number = [], [], []
+                    para.text = para_text
                 elif (header_1_keyword_first and (letter_number or digit) and len(para_text.split()) > 2):
                     para.style = heading_style
                     para_text = " ".join(para_text.split()[2:])
                     header_1_keyword_first, digit, letter_number = [], [], []
+                    para.text = para_text
 
                 # If whole text is a number (in letter) convert it to number
                 if (letter_number and para_text.upper() == letter_number[0]):
                     para.style = heading_style
                     para_text = str(number_dict[letter_number[0]])
+                    para.text = para_text
 
                 # Replace chapter name number in letter with the corresponding number
                 elif (header_1_keyword_first):
@@ -192,18 +203,18 @@ def formatDocument(input, output):
                         
                     if (len(para_text.split()) >= 2 and para_text.split()[1].isdigit()):
                         para_text = para_text[len(header_1_keyword_first[0])+1:]
+                    para.text = para_text
 
                 # If no conditions were met, apply normal style
+                if (para.style != heading_style and para.style != title_style and para.style != subtitle_style):
                     runSetStyle(para, normal_style)
                     para.style = normal_style
                 else:
-                    para_text = capitalizeSentences(para_text)
+                    para.text = capitalizeSentences(para_text)
 
             else:
                 runSetStyle(para, normal_style)
                 para.style = normal_style
-            
-            para.text = para_text
 
         else:
             deleteParagraph(para)
@@ -227,11 +238,6 @@ def formatDocument(input, output):
         section.bottom_margin = bottom_margin
         section.left_margin = left_margin
         section.right_margin = right_margin
-
-    if (document.paragraphs and not title_added):
-        document.paragraphs[0].insert_paragraph_before(file.name.replace(".docx", ""), style='Title')
-        addSubtitle(document.paragraphs[0])
-        title_added = True
 
     # Save document
     document.save(output.format(word_count=word_count))
