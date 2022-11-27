@@ -1,3 +1,8 @@
+# Ignore files without extension
+*
+!*/
+!*.*
+
 *.docx
 *.doc
 *.jpg
@@ -6,6 +11,9 @@
 *.pdf
 *.gif
 *.epub
+*.xml
+*.json
+*.rels
 
 test.py
 
