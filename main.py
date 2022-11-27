@@ -97,8 +97,8 @@ def formatDocument(input, output):
     normal_style.font.name = normal_font_name
     normal_style.font.size = normal_font_size
     normal_style.font.color.rgb = normal_font_color
-    # normal_style.font.bold = normal_font_bold
-    # normal_style.font.italic = normal_font_italic
+    normal_style.font.bold = None
+    normal_style.font.italic = None
     normal_style.font.underline = normal_font_underline
 
     ## Format subtitle
@@ -115,6 +115,7 @@ def formatDocument(input, output):
     # subtitle_style.font.bold = subtitle_font_bold
     # subtitle_style.font.italic = subtitle_font_italic
     subtitle_style.font.underline = subtitle_font_underline
+    
     for para in document.paragraphs:
         para_text = para.text.strip()
 
@@ -123,11 +124,14 @@ def formatDocument(input, output):
         para.paragraph_format.right_indent = None
 
         if (para_text != ""):
-            if (para.style.name == "Title" and not title_added):
+            if (para.style.name == title_style.name and not title_added):
                 para.style = title_style
                 para_text = capitalizeSentences(para_text)
                 addSubtitle(para)
                 title_added = True
+            # Some people use Title instead of Heading 1
+            elif (para.style.name == title_style.name and title_added):
+                para.style = heading_style
 
             # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
             elif ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
