@@ -14,6 +14,7 @@ output_folder = "0 - Output"
 # word and the whole paragraph is at most 75 characters long
 CHAPTER_MAX_LENGTH = 75
 
+# First item is the one written if no header is present
 header_1_names_list = [
     "CHAPTER",
     "EPILOGUE",
