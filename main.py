@@ -147,6 +147,7 @@ def formatDocument(input, output):
     for para in document.paragraphs:
         para_text = para.text.strip()
         para_text_old = para_text
+        list_of_actions_logs = ""
 
         para.paragraph_format.first_line_indent = None
         para.paragraph_format.left_indent = None
@@ -156,7 +157,7 @@ def formatDocument(input, output):
             if (not title_added):
                 if (para.style.name != title_style.name):
                     para_text = file_name
-                    logging.debug("[%s] [Title] Set \"%s\" style to Title", file_name, para_text)
+                    list_of_actions_logs = list_of_actions_logs + " [Title]"
 
                 para.style = title_style
                 para_text = capitalizeSentences(para_text)
@@ -168,7 +169,7 @@ def formatDocument(input, output):
             elif (para.style.name == title_style.name):
                 para.style = heading_style
                 para.text = para_text
-                logging.debug("[%s] [Style is Title] Set \"%s\" style to Heading 1", file_name, para_text)
+                list_of_actions_logs = list_of_actions_logs + " [Style is Title]"
 
             # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
             if ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
@@ -194,27 +195,27 @@ def formatDocument(input, output):
                     para_text = para_text.replace(':', '')
                     para_text = header_1_names_list[0].capitalize() + " " + para_text
                     # header_1_keyword_first, digit, letter_number = [], [], []
-                    logging.debug("[%s] [Number] Replaced \"%s\" with \"%s\"", file_name, para.text, para_text)
+                    list_of_actions_logs = list_of_actions_logs + " [No header keyword + number]"
                     para.text = para_text
                 elif (header_1_keyword_first and (letter_number or digit) and len(para_text.split()) > 2):
                     para.style = heading_style
                     para_text = para_text.replace('.', '')
                     para_text = para_text.replace(':', '')
                     # header_1_keyword_first, digit, letter_number = [], [], []
-                    logging.debug("[%s] [Header keyword + number] Replaced \"%s\" with \"%s\"", file_name, para.text, para_text)
+                    list_of_actions_logs = list_of_actions_logs + " [Header keyword + number]"
                     para.text = para_text
 
                 # If whole text is a number (digit)
                 if (digit and para_text == digit):
                     para.style = heading_style
                     para.text = para_text = header_1_names_list[0].capitalize() + " " + para_text
-                    logging.debug("[%s] [Whole Text = Number] \"%s\"", file_name, para_text)
+                    list_of_actions_logs = list_of_actions_logs + " [Whole Text = Number]"
 
                 # If whole text is a number (in letter) convert it to number
                 elif (letter_number and para_text.upper() == letter_number[0]):
                     para.style = heading_style
                     para_text = header_1_names_list[0].capitalize() + " " + str(number_dict[letter_number[0]])
-                    logging.debug("[%s] [Text = Letter number] Replaced \"%s\" with \"%s\"", file_name, para.text, para_text)
+                    list_of_actions_logs = list_of_actions_logs + " [Text = Letter number]"
                     para.text = para_text
 
                 # Replace chapter name number in letter with the corresponding number
@@ -228,10 +229,7 @@ def formatDocument(input, output):
                         if (chapter_number_found):
                             pattern = compile(chapter_number_found, IGNORECASE)
                             para_text = pattern.sub(str(number_dict[chapter_number_found.upper()]), para_text)
-                        
-                    para_text = para_text.replace('.', '')
-                    para_text = para_text.replace(':', '')
-                    logging.debug("[%s] [Letter to number] Replaced \"%s\" with \"%s\"", file_name, para.text, para_text)
+                    list_of_actions_logs = list_of_actions_logs + " [Letter to number]"
                     para.text = para_text
 
                 # If no conditions were met, apply normal style
@@ -248,8 +246,10 @@ def formatDocument(input, output):
         else:
             deleteParagraph(para)
 
+        if (para_text_old != para_text):
+            logging.debug("%s \"%s\" --> \"%s\"", list_of_actions_logs, para_text_old, para_text)
         word_count = word_count + len(para_text.split())
-            
+
     # Document sections iteration
     # Remove headers/footers and set correct page orientation/format
     for section in document.sections:
