@@ -21,6 +21,7 @@ header_1_names_list = [
     "PROLOGUE"
 ]
 
+# Items that should not be capitalized in headings/titles
 capitalize_words_list = [
     "of",
     "in",

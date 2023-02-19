@@ -186,38 +186,40 @@ def formatDocument(input, output):
                     letter_number = [ele for ele in number_dict.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[0])]
                     # List of first digits in text (with . and : characters stuck to it)
                     digit = [ele for ele in para_text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[0])]
-                
-                # If whole text is a number
-                if (digit and para_text == digit):
-                    para.style = heading_style
-                    para.text = para_text
-                    logging.debug("[%s] [Text = Number] Replaced \"%s\" with \"%s\"", file_name, para_text_old, para_text)
-
-                # If there is a chapter name remove header_1_keyword and chapter number
+                    
+                # If there is a chapter name and header_1_keyword and/or chapter number set to Heading 1
                 if ((not header_1_keyword_first) and (letter_number or digit) and len(para_text.split()) > 1):
                     para.style = heading_style
-                    para_text = " ".join(para_text.split()[1:])
-                    header_1_keyword_first, digit, letter_number = [], [], []
+                    para_text = para_text.replace('.', '')
+                    para_text = para_text.replace(':', '')
+                    para_text = header_1_names_list[0].capitalize() + " " + para_text
+                    # header_1_keyword_first, digit, letter_number = [], [], []
+                    logging.debug("[%s] [Number] Replaced \"%s\" with \"%s\"", file_name, para.text, para_text)
                     para.text = para_text
-                    logging.debug("[%s] [Number] Replaced \"%s\" with \"%s\"", file_name, para_text_old, para_text)
                 elif (header_1_keyword_first and (letter_number or digit) and len(para_text.split()) > 2):
                     para.style = heading_style
-                    para_text = " ".join(para_text.split()[2:])
-                    header_1_keyword_first, digit, letter_number = [], [], []
+                    para_text = para_text.replace('.', '')
+                    para_text = para_text.replace(':', '')
+                    # header_1_keyword_first, digit, letter_number = [], [], []
+                    logging.debug("[%s] [Header keyword + number] Replaced \"%s\" with \"%s\"", file_name, para.text, para_text)
                     para.text = para_text
-                    logging.debug("[%s] [Header keyword + number] Replaced \"%s\" with \"%s\"", file_name, para_text_old, para_text)
+
+                # If whole text is a number (digit)
+                if (digit and para_text == digit):
+                    para.style = heading_style
+                    para.text = para_text = header_1_names_list[0].capitalize() + " " + para_text
+                    logging.debug("[%s] [Whole Text = Number] \"%s\"", file_name, para_text)
 
                 # If whole text is a number (in letter) convert it to number
-                if (letter_number and para_text.upper() == letter_number[0]):
+                elif (letter_number and para_text.upper() == letter_number[0]):
                     para.style = heading_style
-                    para_text = str(number_dict[letter_number[0]])
+                    para_text = header_1_names_list[0].capitalize() + " " + str(number_dict[letter_number[0]])
+                    logging.debug("[%s] [Text = Letter number] Replaced \"%s\" with \"%s\"", file_name, para.text, para_text)
                     para.text = para_text
-                    logging.debug("[%s] [Text = Letter number] Replaced \"%s\" with \"%s\"", file_name, para_text_old, para_text)
 
                 # Replace chapter name number in letter with the corresponding number
                 elif (header_1_keyword_first):
                     para.style = heading_style
-                    logging.debug("[%s] Set \"%s\" style to Heading 1", file_name, para_text)
 
                     if (letter_number):
                         for substring in number_dict.keys():
@@ -227,8 +229,9 @@ def formatDocument(input, output):
                             pattern = compile(chapter_number_found, IGNORECASE)
                             para_text = pattern.sub(str(number_dict[chapter_number_found.upper()]), para_text)
                         
-                    if (len(para_text.split()) >= 2 and para_text.split()[1].isdigit()):
-                        para_text = para_text[len(header_1_keyword_first[0])+1:]
+                    para_text = para_text.replace('.', '')
+                    para_text = para_text.replace(':', '')
+                    logging.debug("[%s] [Letter to number] Replaced \"%s\" with \"%s\"", file_name, para.text, para_text)
                     para.text = para_text
 
                 # If no conditions were met, apply normal style
