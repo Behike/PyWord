@@ -191,16 +191,12 @@ def formatDocument(input, output):
                 # If there is a chapter name and header_1_keyword and/or chapter number set to Heading 1
                 if ((not header_1_keyword_first) and (letter_number or digit) and len(para_text.split()) > 1):
                     para.style = heading_style
-                    para_text = para_text.replace('.', '')
-                    para_text = para_text.replace(':', '')
                     para_text = header_1_names_list[0].capitalize() + " " + para_text
                     # header_1_keyword_first, digit, letter_number = [], [], []
                     list_of_actions_logs = list_of_actions_logs + " [No header keyword + number]"
                     para.text = para_text
                 elif (header_1_keyword_first and (letter_number or digit) and len(para_text.split()) > 2):
                     para.style = heading_style
-                    para_text = para_text.replace('.', '')
-                    para_text = para_text.replace(':', '')
                     # header_1_keyword_first, digit, letter_number = [], [], []
                     list_of_actions_logs = list_of_actions_logs + " [Header keyword + number]"
                     para.text = para_text
@@ -219,9 +215,7 @@ def formatDocument(input, output):
                     para.text = para_text
 
                 # Replace chapter name number in letter with the corresponding number
-                elif (header_1_keyword_first):
-                    para.style = heading_style
-
+                elif (para.style == heading_style):
                     if (letter_number):
                         for substring in number_dict.keys():
                             if substring in para_text.upper():
@@ -230,6 +224,10 @@ def formatDocument(input, output):
                             pattern = compile(chapter_number_found, IGNORECASE)
                             para_text = pattern.sub(str(number_dict[chapter_number_found.upper()]), para_text)
                     list_of_actions_logs = list_of_actions_logs + " [Letter to number]"
+                    para_text = para_text.replace('.', ' ')     # Replace . with single space
+                    para_text = para_text.replace(':', ' ')     # replace : with single space
+                    _RE_COMBINE_WHITESPACE = compile(r"\s+")
+                    para_text = _RE_COMBINE_WHITESPACE.sub(" ", para_text).strip()                 # Replace multiple spaces with only one space
                     para.text = para_text
 
                 # If no conditions were met, apply normal style
