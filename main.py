@@ -5,6 +5,7 @@ from pathlib import Path
 from re import compile, search, escape, match, IGNORECASE
 from config import *
 import traceback, logging
+import time
 
 logging.basicConfig(format='%(message)s', level=debug_level)
 
@@ -267,6 +268,7 @@ def formatDocument(input, output):
     # Save document
     document.save(output.format(word_count=word_count))
 
+start_time = time.time()
 
 # Find all docx files in input folder and recreate subfolders in output_folder
 files_list = list(Path().glob(input_folder + "/**/*.docx"))
@@ -286,5 +288,5 @@ for file in files_list:
             traceback.print_exc()
             logging.error("    /!\ %s failed /!\ \n", input_file_path)
 
-logging.info("\n========== Finished ==========")
+logging.info("\n========== Finished in %ss ==========", (time.time() - start_time))
 variable = input('Press enter to exit')
