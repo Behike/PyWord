@@ -12,7 +12,7 @@ output_folder = "0 - Output"
 
 # A chapter/Heading 1 can be recognized if it starts with one of header_1_names_list
 # word and the whole paragraph is at most 75 characters long
-CHAPTER_MAX_LENGTH = 75
+CHAPTER_MAX_LENGTH = 30
 
 # First item is the one written if no header is present
 header_1_names_list = [
