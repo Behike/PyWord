@@ -11,6 +11,17 @@ logging.basicConfig(format='%(message)s', level=debug_level)
 
 word_count = 0
 
+
+def capitalizeSentences(text):
+    text_list = text.split()
+    for i in range(len(text_list)):
+        text_list[i] = text_list[i].lower()
+        if (not text_list[i] in capitalize_words_list or i == 0):
+            text_list[i] = text_list[i].capitalize()
+
+    text = ' '.join(text_list)
+    return text
+
 def formatDocument(input, output):
     global word_count
     title_added = False
@@ -35,16 +46,6 @@ def formatDocument(input, output):
         subt = subtitle._p
         p = paragraph._p
         p.addnext(subt)
-
-    def capitalizeSentences(text):
-        text_list = text.split()
-        for i in range(len(text_list)):
-            text_list[i] = text_list[i].lower()
-            if (not text_list[i] in capitalize_words_list or i == 0):
-                text_list[i] = text_list[i].capitalize()
-
-        text = ' '.join(text_list)
-        return text
 
     # Set style using runs
     def runSetStyle(paragraph, style):
