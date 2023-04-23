@@ -217,7 +217,9 @@ not_header_words = [
     'day',
     'days',
     'month',
-    'months'
+    'months',
+    'year',
+    'years'
 ]
 
 # docxToEpub configuration
