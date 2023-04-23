@@ -189,17 +189,19 @@ def formatDocument(input, output):
                     letter_number = [ele for ele in number_dict.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[0])]
                     # List of first digits in text (with . and : characters stuck to it)
                     digit = [ele for ele in para_text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[0])]
-                    
-                # If there is a chapter name and header_1_keyword and/or chapter number set to Heading 1
+
+                # If there is a chapter name remove header_1_keyword and chapter number
                 if ((not header_1_keyword_first) and (letter_number or digit) and len(para_text.split()) > 1):
                     para.style = heading_style
-                    para_text = header_1_names_list[0].capitalize() + " " + para_text
-                    # header_1_keyword_first, digit, letter_number = [], [], []
+                    para_text = " ".join(para_text.split()[1:])
+                    # para_text = header_1_names_list[0].capitalize() + " " + para_text
+                    header_1_keyword_first, digit, letter_number = [], [], []
                     list_of_actions_logs = list_of_actions_logs + " [No header keyword + number]"
                     para.text = para_text
                 elif (header_1_keyword_first and (letter_number or digit) and len(para_text.split()) > 2):
                     para.style = heading_style
-                    # header_1_keyword_first, digit, letter_number = [], [], []
+                    para_text = " ".join(para_text.split()[2:])
+                    header_1_keyword_first, digit, letter_number = [], [], []
                     list_of_actions_logs = list_of_actions_logs + " [Header keyword + number]"
                     para.text = para_text
 
