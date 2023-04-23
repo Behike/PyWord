@@ -206,6 +206,20 @@ number_dict = {
     "ONE HUNDRED": 100,
 }
 
+# If one of the following words is present in a sentence, the paragraph won't become a header
+not_header_words = [
+    'minute',
+    'minutes',
+    'hour',
+    'hours',
+    'week',
+    'weeks',
+    'day',
+    'days',
+    'month',
+    'months'
+]
+
 # docxToEpub configuration
 epub_input_folder = "0 - Input EPUB"
 METADATA = {

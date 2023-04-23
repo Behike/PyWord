@@ -171,8 +171,10 @@ def formatDocument(input, output):
                 para.text = para_text
                 list_of_actions_logs = list_of_actions_logs + " [Style is Title]"
 
+            not_header_words_present = [ele for ele in not_header_words if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", para_text.split()[1])]   
+
             # Check for Heading 1 text (starting with header_1_names_list or numeric value and max 75 characters)
-            if ((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)):
+            if (((len(para_text) <= CHAPTER_MAX_LENGTH) or (para.style.name == heading_style.name)) and not not_header_words_present):
                 ## Find elements in paragraph text
                 # List of header 1 keywords present at the beginning of the text (empty or one word only)
                 header_1_keyword_first = [ele for ele in header_1_names_list if para_text.upper().startswith(ele)]
