@@ -274,25 +274,26 @@ def formatDocument(input, output):
     # Save document
     document.save(output.format(word_count=word_count))
 
-start_time = time.time()
+if __name__ == '__main__':
+    start_time = time.time()
 
-# Find all docx files in input folder and recreate subfolders in output_folder
-files_list = list(Path().glob(input_folder + "/**/*.docx"))
-for file in files_list:
-    input_file_path = file.as_posix()
-    temp_output_file_path = f"{output_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
-    if (file.parents[-2] != output_folder):
-        logging.info("\nWorking on %s", input_file_path)
-        Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
-        try:
-            output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
-            formatDocument(input_file_path, output_file_path)
-            if (word_count == 0):
-                logging.warning("No words were detected in %s (document might be a table)\n", file.name.replace("docx", ""))
-            word_count = 0
-        except Exception:
-            traceback.print_exc()
-            logging.error("    /!\ %s failed /!\ \n", input_file_path)
+    # Find all docx files in input folder and recreate subfolders in output_folder
+    files_list = list(Path().glob(input_folder + "/**/*.docx"))
+    for file in files_list:
+        input_file_path = file.as_posix()
+        temp_output_file_path = f"{output_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
+        if (file.parents[-2] != output_folder):
+            logging.info("\nWorking on %s", input_file_path)
+            Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
+            try:
+                output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
+                formatDocument(input_file_path, output_file_path)
+                if (word_count == 0):
+                    logging.warning("No words were detected in %s (document might be a table)\n", file.name.replace("docx", ""))
+                word_count = 0
+            except Exception:
+                traceback.print_exc()
+                logging.error("    /!\ %s failed /!\ \n", input_file_path)
 
-logging.info("\n========== Finished in %ss ==========", (time.time() - start_time))
-variable = input('Press enter to exit')
+    logging.info("\n========== Finished in %ss ==========", (time.time() - start_time))
+    variable = input('Press enter to exit')
