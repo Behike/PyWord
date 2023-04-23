@@ -221,10 +221,11 @@ def formatDocument(input, output):
                 # Replace chapter name number in letter with the corresponding number
                 elif (para.style == heading_style):
                     if (letter_number):
+                        chapter_number_found = ''
                         for substring in number_dict.keys():
                             if substring in para_text.upper():
                                 chapter_number_found = substring
-                        if (chapter_number_found):
+                        if (chapter_number_found != ''):
                             pattern = compile(chapter_number_found, IGNORECASE)
                             para_text = pattern.sub(str(number_dict[chapter_number_found.upper()]), para_text)
                     list_of_actions_logs = list_of_actions_logs + " [Letter to number]"
