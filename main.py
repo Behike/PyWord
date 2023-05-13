@@ -155,14 +155,20 @@ def formatDocument(input, output):
         para.paragraph_format.right_indent = None
 
         if (para_text != ""):
+            # If no title has been added yet and first text is file name (= Title) use it as a Title
             if (not title_added):
-                if (para.style.name != title_style.name):
-                    para_text = file_name
+                # if (para.style.name != title_style.name):
+                if (para_text == file_name):
                     list_of_actions_logs = list_of_actions_logs + " [Title]"
+                    para.style = title_style
+                    para_text = capitalizeSentences(para_text)
+                    addSubtitle(para)
+                else:
+                    list_of_actions_logs = list_of_actions_logs + " [First Header not title]"
+                    # If the first paragraph is different than the filename (= Title) we need to add the title before
+                    prev_para = para.insert_paragraph_before(file_name, title_style)
+                    addSubtitle(prev_para)
 
-                para.style = title_style
-                para_text = capitalizeSentences(para_text)
-                addSubtitle(para)
                 title_added = True
                 para.text = para_text
 
