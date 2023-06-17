@@ -51,6 +51,9 @@ def addChaptersToDocuments(input, output):
 
     # Save document if updated
     if (has_been_modified):
+        # Create output folder if file is created only
+        Path(output).parents[0].mkdir(parents=True, exist_ok=True)
+
         if (output.lower().endswith('.doc')):
             output = output.replace(output[output.rfind('.')+1:], 'docx')
             input = input.replace(input[input.rfind('.')+1:], 'docx')
@@ -89,7 +92,6 @@ if __name__ == '__main__':
         output_file_path = f"{output_chapters_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
         if (file.parents[-2] != output_chapters_folder):
             logging.info("\nWorking on %s", input_file_path)
-            Path(output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
             try:
                 addChaptersToDocuments(input_file_path, output_file_path)
             except Exception:
