@@ -302,7 +302,13 @@ if __name__ == '__main__':
             logging.info("\nWorking on %s", input_file_path)
             Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
             try:
-                output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
+                if (temp_output_file_path.endswith(".docx")):
+                    output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
+                elif (temp_output_file_path.endswith(".doc")):
+                    output_file_path = temp_output_file_path.replace(".doc", " - {word_count}.doc")
+                else:
+                    logging.error("Should not happen")
+                    
                 formatDocument(input_file_path, output_file_path)
                 if (word_count == 0):
                     logging.warning("No words were detected in %s (document might be a table)\n", file.name.replace("docx", ""))
