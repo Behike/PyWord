@@ -1,18 +1,25 @@
+from glob import glob
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.section import WD_ORIENTATION
 from pathlib import Path
 from re import compile, search, escape, match, IGNORECASE
 from config import *
-import traceback, logging
-import time
+import traceback, logging, sys
+import time, datetime
 
 #######################################################################
 ### This script is to re-add removed chapters after the main script ###
-### So the "output_folder" is the input of this script              ###
 #######################################################################
 
-logging.basicConfig(format='%(message)s', level=debug_level)
+logging.basicConfig(
+        format='%(message)s',
+        level=debug_level,
+        handlers=[
+            logging.FileHandler(filename="addChapter.log", encoding='utf-8'),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
 
 def addChaptersToDocuments(input, output):
     document = Document(input)
@@ -47,11 +54,12 @@ def addChaptersToDocuments(input, output):
 
 if __name__ == '__main__':
     start_time = time.time()
+    logging.info("\n================================ Add chapter script ================================")
+    logging.info(datetime.datetime.now())
+
     # Find all docx files in input input_chapters_folder and recreate subfolders in output_chapters_folder
     files_list = list(Path().glob(input_chapters_folder + "/**/*.doc*"))
 
-    # Find all docx files in input output_folder and recreate subfolders in output_chapters_folder
-    files_list = list(Path().glob(output_folder + "/**/*.docx"))
     for file in files_list:
         input_file_path = file.as_posix()
         output_file_path = f"{output_chapters_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
@@ -64,5 +72,5 @@ if __name__ == '__main__':
                 traceback.print_exc()
                 logging.error("    /!\ %s failed /!\ \n", input_file_path)
 
-    logging.info("\n========== Finished in %ss ==========", (time.time() - start_time))
+    logging.info("\n==================== Finished in %ss ====================\n\n\n", (time.time() - start_time))
     variable = input('Press enter to exit')
