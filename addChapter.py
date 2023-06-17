@@ -77,6 +77,13 @@ if __name__ == '__main__':
     # Find all docx files in input input_chapters_folder and recreate subfolders in output_chapters_folder
     files_list = list(Path().glob(input_chapters_folder + "/**/*.doc*"))
 
+    # Skip files in a skipped_folders folder
+    for i in reversed(range(len(files_list))):
+        skipped_folders_in_path = [ele for ele in skipped_folders if ele in (part.upper() for part in files_list[i].parts)]
+        if (skipped_folders_in_path):
+            print("Skipping " + files_list[i].as_posix())
+            files_list.remove(files_list[i])
+
     for file in files_list:
         input_file_path = file.as_posix()
         output_file_path = f"{output_chapters_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"

@@ -7,6 +7,11 @@ from docx.enum.section import WD_ORIENTATION
 debug_level = "DEBUG"
 
 ## Folder where to search for/save files
+# Skip files in those folders (case insensitive)
+skipped_folders = [
+    "PAST",
+    "OLD"
+]
 # Main script
 input_folder = "0 - Input"
 output_folder = "0 - Output"
@@ -18,7 +23,7 @@ output_chapters_folder = "0 - Output chapters"
 # word and the whole paragraph is at most 75 characters long
 CHAPTER_MAX_LENGTH = 30
 
-# First item is the one written if no header is present
+# First item is the one written if no header is present (case insensitive)
 header_1_names_list = [
     "CHAPTER",
     "EPILOGUE",
