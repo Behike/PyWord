@@ -14,6 +14,7 @@
 *.xml
 *.json
 *.rels
+*.log
 
 test.py
 
