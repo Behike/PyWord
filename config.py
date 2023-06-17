@@ -9,6 +9,7 @@ debug_level = "DEBUG"
 # Folder where to search for/save files
 input_folder = "0 - Input"
 output_folder = "0 - Output"
+output_chapters_folder = "0 - Output chapters"
 
 # A chapter/Heading 1 can be recognized if it starts with one of header_1_names_list
 # word and the whole paragraph is at most 75 characters long
