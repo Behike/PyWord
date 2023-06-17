@@ -1,4 +1,5 @@
 from glob import glob
+import pypandoc
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.section import WD_ORIENTATION
@@ -50,7 +51,23 @@ def addChaptersToDocuments(input, output):
 
     # Save document if updated
     if (has_been_modified):
+        if (output.lower().endswith('.doc')):
+            output = output.replace(output[output.rfind('.')+1:], 'docx')
+            input = input.replace(input[input.rfind('.')+1:], 'docx')
         document.save(output)
+    
+        # Convert to epub
+        pypandoc.convert_file(
+            output,
+            'epub',
+            outputfile=output.replace(output[output.rfind('.')+1:], 'epub'),
+            extra_args=[
+                '--metadata',
+                'title={0}'.format(document.core_properties.title),
+                '--metadata',
+                'creator={0}'.format(document.core_properties.author)
+            ]
+        )
 
 if __name__ == '__main__':
     start_time = time.time()
