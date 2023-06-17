@@ -294,7 +294,7 @@ if __name__ == '__main__':
     logging.info(datetime.datetime.now())
 
     # Find all doc and docx files in input folder and recreate subfolders in output_folder
-    files_list = list(Path().glob(input_chapters_folder + "/**/*.doc*"))
+    files_list = list(Path().glob(input_folder + "/**/*.doc*"))
     for file in files_list:
         input_file_path = file.as_posix()
         temp_output_file_path = f"{output_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
@@ -302,13 +302,9 @@ if __name__ == '__main__':
             logging.info("\nWorking on %s", input_file_path)
             Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
             try:
-                if (temp_output_file_path.endswith(".docx")):
-                    output_file_path = temp_output_file_path.replace(".docx", " - {word_count}.docx")
-                elif (temp_output_file_path.endswith(".doc")):
-                    output_file_path = temp_output_file_path.replace(".doc", " - {word_count}.doc")
-                else:
-                    logging.error("Should not happen")
-                    
+                file_extension = input_file_path[input_file_path.rfind('.')+1:]
+                output_file_path = temp_output_file_path.replace(file_extension, " - {word_count}." + file_extension)
+
                 formatDocument(input_file_path, output_file_path)
                 if (word_count == 0):
                     logging.warning("No words were detected in %s (document might be a table)\n", file.name.replace("docx", ""))
