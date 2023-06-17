@@ -47,6 +47,8 @@ def addChaptersToDocuments(input, output):
 
 if __name__ == '__main__':
     start_time = time.time()
+    # Find all docx files in input input_chapters_folder and recreate subfolders in output_chapters_folder
+    files_list = list(Path().glob(input_chapters_folder + "/**/*.doc*"))
 
     # Find all docx files in input output_folder and recreate subfolders in output_chapters_folder
     files_list = list(Path().glob(output_folder + "/**/*.docx"))

@@ -6,9 +6,12 @@ from docx.enum.section import WD_ORIENTATION
 # Choose log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 debug_level = "DEBUG"
 
-# Folder where to search for/save files
+## Folder where to search for/save files
+# Main script
 input_folder = "0 - Input"
 output_folder = "0 - Output"
+# Missing chapters script
+input_chapters_folder = "0 - Output"
 output_chapters_folder = "0 - Output chapters"
 
 # A chapter/Heading 1 can be recognized if it starts with one of header_1_names_list

@@ -283,8 +283,8 @@ def formatDocument(input, output):
 if __name__ == '__main__':
     start_time = time.time()
 
-    # Find all docx files in input folder and recreate subfolders in output_folder
-    files_list = list(Path().glob(input_folder + "/**/*.docx"))
+    # Find all doc and docx files in input folder and recreate subfolders in output_folder
+    files_list = list(Path().glob(input_chapters_folder + "/**/*.doc*"))
     for file in files_list:
         input_file_path = file.as_posix()
         temp_output_file_path = f"{output_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
