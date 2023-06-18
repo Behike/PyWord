@@ -1,2 +1,3 @@
 python-docx
 pypandoc-binary
+updateable-zip-file
