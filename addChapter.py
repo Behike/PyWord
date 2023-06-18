@@ -69,14 +69,13 @@ def addChaptersToDocuments(input, output):
                 'title={0}'.format(document.core_properties.title),
                 '--metadata',
                 'creator={0}'.format(document.core_properties.author),
-                '--epub-embed-font={0}'.format('Cambria-Font.ttf'),
-                '--epub-embed-font={0}'.format('Palatino Linotype.ttf'),
-                '--css=default.css',
-                '--top-level-division=chapter'
+                '--epub-embed-font={0}'.format('Style/Cambria-Font.ttf'),
+                '--epub-embed-font={0}'.format('Style/Palatino Linotype.ttf'),
+                '--css=Style/default.css',
+                # '--top-level-division=chapter'
+                # '--standalone=false',
+                # '--toc'
             ]
-            # ,
-            #     '--standalone=false',
-            #     '--toc'
         )
 
 if __name__ == '__main__':
