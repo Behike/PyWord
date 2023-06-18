@@ -22,3 +22,10 @@ test.py
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Input/Output folders
+0 - Input
+0 - Output
+0 - Output - main
+0 - Output chapters
+Convertio
