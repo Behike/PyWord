@@ -1,4 +1,4 @@
-from chapisha import CreateWork
+import aspose.words as aw
 from pathlib import Path
 from config import *
 import traceback
@@ -14,24 +14,24 @@ for file in files_list:
         Path(temp_output_file_path).parents[0].mkdir(parents=True, exist_ok=True)
         try:
             # output_file_path = temp_output_file_path.replace(".docx", "")
-            output_file_path = Path(temp_output_file_path).parents[0]
+            output_file_path = temp_output_file_path.replace(".docx", ".epub")
             print("Output:", output_file_path)
-            temp_metadata = METADATA
-            for item in temp_metadata:
-                if (temp_metadata[item] == ""):
-                    if (item == "creator"):
-                        list = [input("Enter value for: " + item + "\n")]
-                        temp_metadata[item] = list
-                    else:
-                        temp_metadata[item] = input("Enter value for: " + item + "\n")
-            print(temp_metadata)
+            # temp_metadata = METADATA
+            # for item in temp_metadata:
+            #     if (temp_metadata[item] == ""):
+            #         if (item == "creator"):
+            #             list = [input("Enter value for: " + item + "\n")]
+            #             temp_metadata[item] = list
+            #         else:
+            #             temp_metadata[item] = input("Enter value for: " + item + "\n")
+            # print(temp_metadata)
+            doc = aw.Document(input_file_path)
+            doc.save(output_file_path)
             # work = CreateWork(output_file_path, metadata=temp_metadata, stateless=True)
-            work = CreateWork(output_file_path)
-            work.set_metadata(temp_metadata)
-            work.set_document(input_file_path)
-            work.build()
-            if (not work.validate()):
-                print("    /!\ Created EPUB file is not standards compliant /!\ \n")
+            # work = CreateWork(output_file_path)
+            # work.set_metadata(temp_metadata)
+            # work.set_document(input_file_path)
+            # work.build()
         except Exception:
             traceback.print_exc()
             print("    /!\ " + input_file_path + " failed /!\ \n")
