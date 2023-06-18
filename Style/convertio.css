@@ -1,0 +1,119 @@
+.block_ {
+  display: block;
+  font-family: "Cambria", serif;
+  font-size: 2em;
+  line-height: 1.2;
+  page-break-after: avoid;
+  page-break-inside: avoid;
+  text-align: center;
+  margin: 45pt 0;
+  padding: 0;
+}
+.block_1 {
+  color: currentColor;
+  display: block;
+  font-size: 0.75em;
+  line-height: 1.2;
+  page-break-after: avoid;
+  page-break-inside: avoid;
+  text-align: center;
+  margin: 18pt 0 45pt;
+  padding: 0;
+}
+.block_2 {
+  display: block;
+  font-size: 2em;
+  font-weight: normal;
+  line-height: 1.2;
+  page-break-after: avoid;
+  page-break-inside: avoid;
+  text-align: center;
+  margin: 45pt 0;
+  padding: 0;
+}
+.block_3 {
+  border-bottom-style: none;
+  display: block;
+  font-family: serif;
+  margin: 0 0 6pt;
+  padding: 0;
+}
+.block_4 {
+  border-bottom-style: none;
+  display: block;
+  margin: 0 0 6pt;
+  padding: 0;
+}
+.block_5 {
+  display: block;
+  margin: 0 0 6pt;
+  padding: 0;
+}
+.block_6 {
+  border-bottom-style: none;
+  display: block;
+  font-style: italic;
+  margin: 0 0 6pt;
+  padding: 0;
+}
+.block_7 {
+  border-bottom-style: none;
+  display: block;
+  text-align: center;
+  margin: 0 0 6pt;
+  padding: 0;
+}
+.block_8 {
+  display: block;
+  font-style: italic;
+  margin: 0 0 6pt;
+  padding: 0;
+}
+.block_9 {
+  border-bottom-style: none;
+  border-left-style: none;
+  border-right-style: none;
+  border-top-style: none;
+  display: block;
+  margin: 0 0 6pt;
+  padding: 0;
+}
+.block_10 {
+  display: block;
+  font-size: 2em;
+  font-weight: normal;
+  line-height: 1.08;
+  page-break-after: avoid;
+  page-break-inside: avoid;
+  text-align: center;
+  margin: 45pt 0;
+  padding: 0;
+}
+.block_11 {
+  display: block;
+  line-height: 1.2;
+  margin: 0 0 6pt;
+  padding: 0;
+}
+.calibre {
+  color: #000;
+  display: block;
+  font-family: "Palatino Linotype", serif;
+  font-size: 1em;
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0 5pt;
+}
+.calibre1 {
+  display: block;
+  line-height: 1.2;
+}
+.calibre2 {
+  font-style: italic;
+}
+.calibre3 {
+  white-space: pre-wrap;
+}
+.calibre4 {
+  display: block;
+}
