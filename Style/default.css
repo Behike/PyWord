@@ -9,22 +9,13 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
   font-family: Palatino Linotype, serif;
   font-size: 10px;
   vertical-align: baseline; */
-  /* color: #000;
+  color: #000;
   display: block;
   font-family: "Palatino Linotype", serif;
-  font-size: 100%;
+  font-size: 1em;
   padding-left: 0;
   padding-right: 0;
-  margin: 0 5pt; */
-  border-bottom-style: none;
-  display: block;
-  font-family: "Palatino Linotype", serif;
-  line-height: 1.2;
-  text-align: left;
-  margin: 45pt 0;
-  font-size: 100%;
-  padding: 0;
-  border: black none 1pt
+  margin: 0 5pt;
 }
 ol, ul, li, dl, dt, dd {
   margin: 0;
@@ -40,35 +31,10 @@ html {
   background-color: #fdfdfd;
 }
 p {
-  /* display: block;
   text-indent: 0;
-  margin: 1em;
+  margin: 1em 0;
   widows: 2;
   orphans: 2;
-  font-family: Palatino Linotype, serif; */
-  border-bottom-style: none;
-  display: block;
-  font-size: 0.625em;
-  margin: 0 0 6pt;
-  padding: 0
-}
-p #subtitle {
-  /* display: block;
-  text-indent: 0;
-  margin: 0.75em;
-  widows: 2;
-  orphans: 2;
-  font-family: Palatino Linotype, serif;
-  text-align: center; */
-  color: currentColor;
-  display: block;
-  font-size: 0.5625em;
-  line-height: 1.2;
-  page-break-after: avoid;
-  page-break-inside: avoid;
-  text-align: center !important;
-  margin: 18pt 0 45pt;
-  padding: 0;
 }
 a {
   color: #1a1a1a;
@@ -88,10 +54,8 @@ h1 {
   page-break-before: always;
   page-break-after: avoid;
   page-break-inside: avoid; */
-  border-bottom-style: none;
-  font-size: 2.25em;
   display: block;
-  /* font-size: 2em; */
+  font-size: 2em;
   font-weight: normal;
   line-height: 1.2;
   page-break-after: avoid;
@@ -100,10 +64,7 @@ h1 {
   margin: 45pt 0;
   padding: 0;
 }
-h1 #title {
-    font-family: "Cambria", serif !important;
 
-  }
 ol, ul {
   margin: 1em 0 0 1.7em;
 }
