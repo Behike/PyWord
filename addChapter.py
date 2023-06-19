@@ -64,6 +64,7 @@ def addChaptersToDocuments(input_docx, output_docx):
     
         epub_file_path = output_docx.replace(output_docx[output_docx.rfind('.')+1:], 'epub')
         print(epub_file_path)
+
         # Convert to epub
         pypandoc.convert_file(
             output_docx,
@@ -83,66 +84,67 @@ def addChaptersToDocuments(input_docx, output_docx):
             ]
         )
 
-    toc_file_path = 'EPUB/toc.ncx'
-    content_file_path = 'EPUB/content.opf'
-    nav_file_path = 'EPUB/nav.xhtml'
-    title_page_file_path = 'EPUB/text/title_page.xhtml'
-    ch001_file_path = 'EPUB/text/ch001.xhtml'
-    toc_data = ''
-    content_data = ''
-    nav_data = ''
-    title_page_data = ''
+        toc_file_path = 'EPUB/toc.ncx'
+        content_file_path = 'EPUB/content.opf'
+        nav_file_path = 'EPUB/nav.xhtml'
+        title_page_file_path = 'EPUB/text/title_page.xhtml'
+        ch001_file_path = 'EPUB/text/ch001.xhtml'
+        toc_data = ''
+        content_data = ''
+        nav_data = ''
+        title_page_data = ''
 
-    # Read and modify files content in epub 
-    with ZipFile(epub_file_path, 'r', metadata_encoding='utf-8') as epub:
-        epub.printdir()
-        toc_data = epub.read(toc_file_path).decode("utf-8") 
-        
-        ## TOC file --> Remove ch001
-        # Add playOrder and class elements to each navPoint except first (0)
-        toc_data = re.sub(r'navPoint-([1-9]{1}\d*)"', r'navPoint-\1" playOrder="\1" class="chapter"', toc_data)
-        # Remove navPoint-0 element (wrong title)
-        # toc_file = re.sub(r'\s+<navPoint id="navPoint-0" playOrder="0" class="chapter">.*?</navPoint>', '', toc_file, flags=re.MULTILINE|re.DOTALL)
-        toc_data = re.sub(r'\s+<navPoint id="navPoint-0">.*?</navPoint>', '', toc_data, flags=re.MULTILINE|re.DOTALL)
-        # Replace first navPoint class (chapter --> titlepage)
-        toc_data = toc_data.replace('<navPoint id="navPoint-1" playOrder="1" class="chapter">', '<navPoint id="navPoint-1" playOrder="1" class="titlepage">')
-        # print(toc_data)
+        # Read and modify files content in epub 
+        with ZipFile(epub_file_path, 'r', metadata_encoding='utf-8') as epub:
+            epub.printdir()
+            toc_data = epub.read(toc_file_path).decode("utf-8") 
+            
+            ## TOC file --> Remove ch001
+            # Add playOrder and class elements to each navPoint except first (0)
+            toc_data = re.sub(r'navPoint-([1-9]{1}\d*)"', r'navPoint-\1" playOrder="\1" class="chapter"', toc_data)
+            # Remove navPoint-0 element (wrong title)
+            # toc_file = re.sub(r'\s+<navPoint id="navPoint-0" playOrder="0" class="chapter">.*?</navPoint>', '', toc_file, flags=re.MULTILINE|re.DOTALL)
+            toc_data = re.sub(r'\s+<navPoint id="navPoint-0">.*?</navPoint>', '', toc_data, flags=re.MULTILINE|re.DOTALL)
+            # Replace first navPoint class (chapter --> titlepage)
+            toc_data = toc_data.replace('<navPoint id="navPoint-1" playOrder="1" class="chapter">', '<navPoint id="navPoint-1" playOrder="1" class="titlepage">')
+            # print(toc_data)
 
-        ## Content file --> Remove ch001 lines
-        content_data = epub.read(content_file_path).decode("utf-8") 
-        content_data = re.sub(r'\s+<item id="ch001_xhtml" href="text/ch001\.xhtml" media-type="application/xhtml\+xml" />', '', content_data, flags=re.MULTILINE)
-        content_data = re.sub(r'\s+<itemref idref="ch001_xhtml" />', '', content_data, flags=re.MULTILINE)       
-        # print(content_data)
+            ## Content file --> Remove ch001 lines
+            content_data = epub.read(content_file_path).decode("utf-8") 
+            content_data = re.sub(r'\s+<item id="ch001_xhtml" href="text/ch001\.xhtml" media-type="application/xhtml\+xml" />', '', content_data, flags=re.MULTILINE)
+            content_data = re.sub(r'\s+<itemref idref="ch001_xhtml" />', '', content_data, flags=re.MULTILINE)       
+            # print(content_data)
 
-        ## Nav file --> Remove ch001 part
-        nav_data = epub.read(nav_file_path).decode("utf-8") 
-        nav_data = re.sub(r'<li id="toc-li-1"><a href="text/ch001.xhtml">.*?</a></li>', '', nav_data, flags=re.MULTILINE|re.DOTALL)
-        # print(nav_data)
+            ## Nav file --> Remove ch001 part
+            nav_data = epub.read(nav_file_path).decode("utf-8") 
+            nav_data = re.sub(r'<li id="toc-li-1"><a href="text/ch001.xhtml">.*?</a></li>', '', nav_data, flags=re.MULTILINE|re.DOTALL)
+            # print(nav_data)
 
-        ## Title page --> Replace paragraph with the one from ch001.xhtml
-        title_page_data = epub.read(title_page_file_path).decode("utf-8")
-        ch001_data = epub.read(ch001_file_path).decode("utf-8")
-        ch001_data = re.search(r'<p>Copyright.*?</p>', ch001_data, flags=re.MULTILINE|re.DOTALL)
-        # Add subtitle id to title paragraph to styled it differently
-        ch001_data = ch001_data[0].replace('<p>', '<p id="subtitle">')
-        print(ch001_data)
-        title_page_data = title_page_data.replace('<p class=""></p>', ch001_data)
-        print(title_page_data)
+            ## Title page --> Replace paragraph with the one from ch001.xhtml
+            title_page_data = epub.read(title_page_file_path).decode("utf-8")
+            ch001_data = epub.read(ch001_file_path).decode("utf-8")
+            ch001_data = re.search(r'<p>Copyright.*?</p>', ch001_data, flags=re.MULTILINE|re.DOTALL)
+            # Add subtitle id to title paragraph to styled it differently
+            ch001_data = ch001_data[0].replace('<p>', '<p id="subtitle">')
+            print(ch001_data)
+            title_page_data = title_page_data.replace('<p class=""></p>', ch001_data)
+            print(title_page_data)
 
-    # Update archive (epub) with modified files
-    with UpdateableZipFile(epub_file_path, "a") as o:
-        # Overwrite toc file
-        o.writestr(toc_file_path, str.encode(toc_data))
-        # Overwrite content file
-        o.writestr(content_file_path, str.encode(content_data))
-        # Overwrite nav file
-        o.writestr(nav_file_path, str.encode(nav_data))
+        # Update archive (epub) with modified files
+        with UpdateableZipFile(epub_file_path, "a") as o:
+            # Overwrite toc file
+            o.writestr(toc_file_path, str.encode(toc_data))
+            # Overwrite content file
+            o.writestr(content_file_path, str.encode(content_data))
+            # Overwrite nav file
+            o.writestr(nav_file_path, str.encode(nav_data))
 
-        # Remove ch001.xhtml from text folder
-        o.remove_file(ch001_file_path)
-        # Overwrite title_page.xhtml
-        o.writestr(title_page_file_path, str.encode(title_page_data))
-
+            # Remove ch001.xhtml from text folder
+            o.remove_file(ch001_file_path)
+            # Overwrite title_page.xhtml
+            o.writestr(title_page_file_path, str.encode(title_page_data))
+    else:
+        logging.warning('No conversion was made as no modifications ')
 
 
 if __name__ == '__main__':
