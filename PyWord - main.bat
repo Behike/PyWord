@@ -7,5 +7,5 @@ curl -O https://github.com/Behike/PyWord/raw/main/Style/Cambria-Font.ttf
 curl -O https://github.com/Behike/PyWord/raw/main/Style/Palatino%20Linotype.ttf
 
 pip install -r requirements.txt
-python .\main.py
+python3.11 .\main.py
 pause
