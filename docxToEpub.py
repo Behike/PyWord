@@ -160,8 +160,8 @@ if __name__ == '__main__':
     logging.info("\n================================ docx to epub script ================================")
     logging.info(datetime.datetime.now())
 
-    # Find all docx files in input input_chapters_folder and recreate subfolders in output_chapters_folder
-    files_list = list(Path().glob(input_chapters_folder + "/**/*.doc*"))
+    # Find all docx files in input input_docx_folder and recreate subfolders in output_epub_folder
+    files_list = list(Path().glob(input_docx_folder + "/**/*.doc*"))
 
     # Skip files in a skipped_folders folder
     for i in reversed(range(len(files_list))):
@@ -172,8 +172,8 @@ if __name__ == '__main__':
 
     for file in files_list:
         input_file_path = file.as_posix()
-        output_file_path = f"{output_chapters_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
-        if (file.parents[-2] != output_chapters_folder):
+        output_file_path = f"{output_epub_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
+        if (file.parents[-2] != output_epub_folder):
             logging.info("\nWorking on %s", input_file_path)
             try:
                 docxToEpub(input_file_path, output_file_path)

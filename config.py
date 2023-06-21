@@ -16,8 +16,11 @@ skipped_folders = [
 input_folder = "0 - Input"
 output_folder = "0 - Output"
 # Missing chapters script
-input_chapters_folder = "0 - Output"
+input_docx_folder = "0 - Output"
 output_chapters_folder = "0 - Output chapters"
+# Docx to Epub script
+input_docx_folder = "0 - Output"
+output_epub_folder = "0 - Output EPUB"
 
 # A chapter/Heading 1 can be recognized if it starts with one of header_1_names_list
 # word and the whole paragraph is at most 75 characters long
