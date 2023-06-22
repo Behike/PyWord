@@ -4,10 +4,7 @@ import pypandoc
 from updateablezipfile import UpdateableZipFile
 from zipfile import ZipFile
 from docx import Document
-from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.section import WD_ORIENTATION
 from pathlib import Path
-from re import compile, search, escape, match, IGNORECASE
 from config import *
 import traceback, logging, sys
 import time, datetime
@@ -67,91 +64,103 @@ def docxToEpub(input_docx, output_epub):
     content_data = ''
     nav_data = ''
     title_page_data = ''
+    update_required = True
 
     # Read and modify files content in epub 
     with ZipFile(epub_file_path, 'r', metadata_encoding='utf-8') as epub:
         epub.printdir()
         toc_data = epub.read(toc_file_path).decode("utf-8") 
         
-        ## TOC file --> Remove ch001
-        # Add playOrder and class elements to each navPoint except first (0)
-        toc_data = re.sub(r'navPoint-([1-9]{1}\d*)"', r'navPoint-\1" playOrder="\1" class="chapter"', toc_data)
-        # Remove navPoint-0 element (wrong title)
-        # toc_file = re.sub(r'\s+<navPoint id="navPoint-0" playOrder="0" class="chapter">.*?</navPoint>', '', toc_file, flags=re.MULTILINE|re.DOTALL)
-        toc_data = re.sub(r'\s+<navPoint id="navPoint-0">.*?</navPoint>', '', toc_data, flags=re.MULTILINE|re.DOTALL)
-        # Replace first navPoint class (chapter --> titlepage)
-        toc_data = toc_data.replace('<navPoint id="navPoint-1" playOrder="1" class="chapter">', '<navPoint id="navPoint-1" playOrder="1" class="titlepage">')
-        # print(toc_data)
-
-        ## Content file --> Remove ch001 lines
-        content_data = epub.read(content_file_path).decode("utf-8") 
-        content_data = re.sub(r'\s+<item id="ch001_xhtml" href="text/ch001\.xhtml" media-type="application/xhtml\+xml" />', '', content_data, flags=re.MULTILINE)
-        content_data = re.sub(r'\s+<itemref idref="ch001_xhtml" />', '', content_data, flags=re.MULTILINE)       
-        # print(content_data)
-
-        ## Nav file --> Remove ch001 part
-        nav_data = epub.read(nav_file_path).decode("utf-8") 
-        nav_data = re.sub(r'<li id="toc-li-1"><a href="text/ch001.xhtml">.*?</a></li>', '', nav_data, flags=re.MULTILINE|re.DOTALL)
-        # print(nav_data)
-
-        ## Title page --> Replace paragraph with the one from ch001.xhtml
+        # If header of second page = header of title page --> merge
         title_page_data = epub.read(title_page_file_path).decode("utf-8")
         ch001_data = epub.read(ch001_file_path).decode("utf-8")
-        ch001_data = re.findall(r'<p>.*?</p>', ch001_data, flags=re.MULTILINE|re.DOTALL)
-        # Remove duplicate title paragraph
-        title_to_remove = '<p>' + document.core_properties.title.strip().lower() + '</p>'
-        filename_to_remove = '<p>' + input_docx[input_docx.rfind('/')+1:input_docx.rfind('-')-1].lower() + '</p>'
+        title_page_header = re.search(r'<h1 {0,1}(class=\S*)?>(.*?)</h1>', title_page_data, flags=re.MULTILINE|re.DOTALL)
+        ch001_header = re.search(r'<h1 {0,1}(class=\S*)?>(.*?)</h1>', ch001_data, flags=re.MULTILINE|re.DOTALL)
+        
+        if (title_page_header and ch001_header and title_page_header.group(2) == ch001_header.group(2)):
+            ## TOC file --> Remove ch001
+            # Add playOrder and class elements to each navPoint except first (0)
+            toc_data = re.sub(r'navPoint-([1-9]{1}\d*)"', r'navPoint-\1" playOrder="\1" class="chapter"', toc_data)
+            # Remove navPoint-0 element (wrong title)
+            # toc_file = re.sub(r'\s+<navPoint id="navPoint-0" playOrder="0" class="chapter">.*?</navPoint>', '', toc_file, flags=re.MULTILINE|re.DOTALL)
+            toc_data = re.sub(r'\s+<navPoint id="navPoint-0">.*?</navPoint>', '', toc_data, flags=re.MULTILINE|re.DOTALL)
+            # Replace first navPoint class (chapter --> titlepage)
+            toc_data = toc_data.replace('<navPoint id="navPoint-1" playOrder="1" class="chapter">', '<navPoint id="navPoint-1" playOrder="1" class="titlepage">')
+            # print(toc_data)
 
-        for i in reversed(range(len(ch001_data))):
-            if (title_to_remove == ch001_data[i].strip().lower()):
-                ch001_data.remove(ch001_data[i])
+            ## Content file --> Remove ch001 lines
+            content_data = epub.read(content_file_path).decode("utf-8") 
+            content_data = re.sub(r'\s+<item id="ch001_xhtml" href="text/ch001\.xhtml" media-type="application/xhtml\+xml" />', '', content_data, flags=re.MULTILINE)
+            content_data = re.sub(r'\s+<itemref idref="ch001_xhtml" />', '', content_data, flags=re.MULTILINE)       
+            # print(content_data)
+
+            ## Nav file --> Remove ch001 part
+            nav_data = epub.read(nav_file_path).decode("utf-8") 
+            nav_data = re.sub(r'<li id="toc-li-1"><a href="text/ch001.xhtml">.*?</a></li>', '', nav_data, flags=re.MULTILINE|re.DOTALL)
+            # print(nav_data)
+
+            ch001_data = re.findall(r'<p>.*?</p>', ch001_data, flags=re.MULTILINE|re.DOTALL)
+
+            # Remove duplicate title paragraph
+            title_to_remove = '<p>' + document.core_properties.title.strip().lower() + '</p>'
+            filename_to_remove = '<p>' + input_docx[input_docx.rfind('/')+1:input_docx.rfind('-')-1].lower() + '</p>'
+
+            for i in reversed(range(len(ch001_data))):
+                if (title_to_remove == ch001_data[i].strip().lower()):
+                    ch001_data.remove(ch001_data[i])
+                    logging.debug('Removed title paragraph')
+                elif (filename_to_remove == ch001_data[i].strip().lower()):
+                    ch001_data.remove(ch001_data[i])
+                    logging.debug('Removed title (filename) paragraph')
+                else:
+                    logging.info('Nothing in ch001')
+
+            if (title_to_remove in title_page_data.lower()):
+                title_page_data = title_page_data.replace(title_to_remove, '')
                 logging.debug('Removed title paragraph')
-            elif (filename_to_remove == ch001_data[i].strip().lower()):
-                ch001_data.remove(ch001_data[i])
+            elif (filename_to_remove in title_page_data.lower()):
+                title_page_data = title_page_data.replace(filename_to_remove, '')
                 logging.debug('Removed title (filename) paragraph')
             else:
-                logging.info('Nothing in ch001')
+                logging.debug('No duplicate title found')
 
-        if (title_to_remove in title_page_data.lower()):
-            title_page_data = title_page_data.replace(title_to_remove, '')
-            logging.debug('Removed title paragraph')
-        elif (filename_to_remove in title_page_data.lower()):
-            title_page_data = title_page_data.replace(filename_to_remove, '')
-            logging.debug('Removed title (filename) paragraph')
+            # Add subtitle id to title paragraph to styled it differently
+            if ('\n'.join(ch001_data).find('<p>Copyright') != -1 or '\n'.join(ch001_data).find('<p class="subtitle">Copyright') != -1):
+                logging.debug('Using ch001 Copyrights')
+                ch001_data = ch001_data[0].replace('<p>', '<p id="subtitle">')
+            elif (title_page_data.find('<p>Copyright') != -1 or title_page_data.find('<p class="subtitle">Copyright') != -1):
+                logging.debug('Using title_page Copyrights')
+                title_page_data = title_page_data.replace('<p>', '<p id="subtitle">')
+            else:
+                logging.error('No copyright found')
+
+            if (type(ch001_data) is list):
+                ch001_data = '\n'.join(ch001_data)
+
+            ## Title page --> Replace <p class=""></p> with all paragraphs from ch001.xhtml
+            if (title_page_data.find('<p class=""></p>') == -1):
+                logging.error("'<p class=""></p>' could not be found in title_page")
+            else:
+                title_page_data = title_page_data.replace('<p class=""></p>', ch001_data)
         else:
-            logging.debug('No duplicate title found')
+            logging.info(title_page_header)
+            logging.info(ch001_header)
+            update_required = False
 
-        # Add subtitle id to title paragraph to styled it differently
-        if ('\n'.join(ch001_data).find('<p>Copyright') != -1 or '\n'.join(ch001_data).find('<p class="subtitle">Copyright') != -1):
-            logging.debug('Using ch001 Copyrights')
-            ch001_data = ch001_data[0].replace('<p>', '<p id="subtitle">')
-        elif (title_page_data.find('<p>Copyright') != -1 or title_page_data.find('<p class="subtitle">Copyright') != -1):
-            logging.debug('Using title_page Copyrights')
-            title_page_data = title_page_data.replace('<p>', '<p id="subtitle">')
-        else:
-            logging.error('No copyright found')
+    if (update_required):
+        # Update archive (epub) with modified files
+        with UpdateableZipFile(epub_file_path, "a") as o:
+            # Overwrite toc file
+            o.writestr(toc_file_path, str.encode(toc_data))
+            # Overwrite content file
+            o.writestr(content_file_path, str.encode(content_data))
+            # Overwrite nav file
+            o.writestr(nav_file_path, str.encode(nav_data))
 
-        if (type(ch001_data) is list):
-            ch001_data = '\n'.join(ch001_data)
-
-        if (title_page_data.find('<p class=""></p>') == -1):
-            logging.error("'<p class=""></p>' could not be found in title_page")
-        else:
-            title_page_data = title_page_data.replace('<p class=""></p>', ch001_data)
-
-    # Update archive (epub) with modified files
-    with UpdateableZipFile(epub_file_path, "a") as o:
-        # Overwrite toc file
-        o.writestr(toc_file_path, str.encode(toc_data))
-        # Overwrite content file
-        o.writestr(content_file_path, str.encode(content_data))
-        # Overwrite nav file
-        o.writestr(nav_file_path, str.encode(nav_data))
-
-        # Remove ch001.xhtml from text folder
-        o.remove_file(ch001_file_path)
-        # Overwrite title_page.xhtml
-        o.writestr(title_page_file_path, str.encode(title_page_data))
+            # Remove ch001.xhtml from text folder
+            o.remove_file(ch001_file_path)
+            # Overwrite title_page.xhtml
+            o.writestr(title_page_file_path, str.encode(title_page_data))
 
 
 
