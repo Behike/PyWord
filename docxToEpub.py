@@ -9,6 +9,8 @@ from config import *
 import traceback, logging, sys
 import time, datetime
 
+from multiprocessing.dummy import Pool as ThreadPool
+
 ###################################################
 ### This script converts formatted docx to epub ###
 ###################################################
@@ -162,6 +164,21 @@ def docxToEpub(input_docx, output_epub):
             o.writestr(title_page_file_path, str.encode(title_page_data))
 
 
+def pathFunction(input):
+    input_file_path = input.as_posix()
+    output_file_path = f"{output_epub_folder}/{input.relative_to(*input.parts[:1]).as_posix()}"
+    if (input.parents[-2] != output_epub_folder):
+        logging.info("\nWorking on %s", input_file_path)
+        try:
+            docxToEpub(input_file_path, output_file_path)
+        except Exception:
+            traceback.print_exc()
+            logging.error("    /!\ %s failed /!\ \n", input_file_path)
+
+def log_result(retval):
+    results.append(retval)
+    if len(results) % (len(files_list)//10) == 0:
+        print('{:.0%} done'.format(len(results)/len(files_list)))
 
 if __name__ == '__main__':
     start_time = time.time()
@@ -178,16 +195,15 @@ if __name__ == '__main__':
             print("Skipping " + files_list[i].as_posix())
             files_list.remove(files_list[i])
 
-    for file in files_list:
-        input_file_path = file.as_posix()
-        output_file_path = f"{output_epub_folder}/{file.relative_to(*file.parts[:1]).as_posix()}"
-        if (file.parents[-2] != output_epub_folder):
-            logging.info("\nWorking on %s", input_file_path)
-            try:
-                docxToEpub(input_file_path, output_file_path)
-            except Exception:
-                traceback.print_exc()
-                logging.error("    /!\ %s failed /!\ \n", input_file_path)
+    pool = ThreadPool(8)
 
+    results = []
+    for item in files_list:
+        pool.apply_async(pathFunction, args=[item], callback=log_result)
+                       
+    # Close the pool and wait for the work to finish
+    pool.close()
+    pool.join()
+    
     logging.info("\n==================== Finished in %ss ====================\n\n\n", (time.time() - start_time))
     variable = input('Press enter to exit')
