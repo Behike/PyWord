@@ -9,9 +9,9 @@ from config import *
 import traceback, logging, sys
 import time, datetime
 
-#######################################################################
-### This script is to re-add removed chapters after the main script ###
-#######################################################################
+###################################################
+### This script converts formatted docx to epub ###
+###################################################
 
 logging.basicConfig(
         format='%(message)s',
@@ -35,7 +35,7 @@ def docxToEpub(input_docx, output_epub):
     document.save(output_epub)
 
     epub_file_path = output_epub.replace(output_epub[output_epub.rfind('.')+1:], 'epub')
-    print(epub_file_path)
+    logging.debug(epub_file_path)
     # Convert to epub
     pypandoc.convert_file(
         output_epub,
@@ -68,7 +68,6 @@ def docxToEpub(input_docx, output_epub):
 
     # Read and modify files content in epub 
     with ZipFile(epub_file_path, 'r', metadata_encoding='utf-8') as epub:
-        epub.printdir()
         toc_data = epub.read(toc_file_path).decode("utf-8") 
         
         # If header of second page = header of title page --> merge
