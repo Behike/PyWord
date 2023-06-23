@@ -102,27 +102,31 @@ def docxToEpub(input_docx, output_epub):
 
             ch001_data = re.findall(r'<p>.*?</p>', ch001_data, flags=re.MULTILINE|re.DOTALL)
 
-            # Remove duplicate title paragraph
+            # Remove duplicate title paragraph in ch001 or title_page
             title_to_remove = '<p>' + document.core_properties.title.strip().lower() + '</p>'
             filename_to_remove = '<p>' + input_docx[input_docx.rfind('/')+1:input_docx.rfind('-')-1].lower() + '</p>'
 
+            log_shown = False
             for i in reversed(range(len(ch001_data))):
                 if (title_to_remove == ch001_data[i].strip().lower()):
                     ch001_data.remove(ch001_data[i])
                     logging.debug('Removed title paragraph')
+                    log_shown = True
                 elif (filename_to_remove == ch001_data[i].strip().lower()):
                     ch001_data.remove(ch001_data[i])
                     logging.debug('Removed title (filename) paragraph')
-                else:
-                    logging.info('Nothing in ch001')
+                    log_shown = True
 
             if (title_to_remove in title_page_data.lower()):
                 title_page_data = title_page_data.replace(title_to_remove, '')
                 logging.debug('Removed title paragraph')
+                log_shown = True
             elif (filename_to_remove in title_page_data.lower()):
                 title_page_data = title_page_data.replace(filename_to_remove, '')
                 logging.debug('Removed title (filename) paragraph')
-            else:
+                log_shown = True
+
+            if (not log_shown):
                 logging.debug('No duplicate title found')
 
             # Add subtitle id to title paragraph to styled it differently
@@ -205,5 +209,5 @@ if __name__ == '__main__':
     pool.close()
     pool.join()
     
-    logging.info("\n==================== Finished in %ss ====================\n\n\n", (time.time() - start_time))
+    logging.info("\n==================== Finished in %ss ====================\n", (time.time() - start_time))
     variable = input('Press enter to exit')
