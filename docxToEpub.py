@@ -24,6 +24,12 @@ logging.basicConfig(
         ]
     )
 
+# Remove RTL span from string
+def removeRtl(input_file):
+    logging.info(input_file)
+    return re.sub(r'<span dir="rtl">(.*?)</span>', r'\1', input_file, flags=re.MULTILINE|re.DOTALL)
+
+# Remove ch001 from TOC file
 def tocRemoveCh001(toc_file):
     # Add playOrder and class elements to each navPoint except first (0)
     toc_file = re.sub(r'navPoint-([1-9]{1}\d*)"', r'navPoint-\1" playOrder="\1" class="chapter"', toc_file)
@@ -34,14 +40,32 @@ def tocRemoveCh001(toc_file):
     toc_file = toc_file.replace('<navPoint id="navPoint-1" playOrder="1" class="chapter">', '<navPoint id="navPoint-1" playOrder="1" class="titlepage">')
     return toc_file
 
+# Remove ch001 from content file
 def contentRemoveCh001(content_file):
     content_file = re.sub(r'\s+<item id="ch001_xhtml" href="text/ch001\.xhtml" media-type="application/xhtml\+xml" />', '', content_file, flags=re.MULTILINE)
     content_file = re.sub(r'\s+<itemref idref="ch001_xhtml" />', '', content_file, flags=re.MULTILINE)
     return content_file
 
+# Remove ch001 from nav file
 def navRemoveCh001(nav_file):
     nav_data = re.sub(r'<li id="toc-li-1"><a href="text/ch001.xhtml">.*?</a></li>', '', nav_file, flags=re.MULTILINE|re.DOTALL)
     return nav_data
+
+# Update archive (epub) with modified files
+def updateCh001Archive(epub_file_path, toc_data, content_data, nav_data, title_page_data):
+    with UpdateableZipFile(epub_file_path, "a") as o:
+        # Overwrite toc file
+        o.writestr(toc_file_path, str.encode(toc_data))
+        # Overwrite content file
+        o.writestr(content_file_path, str.encode(content_data))
+        # Overwrite nav file
+        o.writestr(nav_file_path, str.encode(nav_data))
+
+        # Remove ch001.xhtml from text folder
+        o.remove_file(ch00X_file_path.format(1))
+        # Overwrite title_page.xhtml
+        o.writestr(title_page_file_path, str.encode(title_page_data))
+
 
 def docxToEpub(input_docx, output_epub):
     # Open document to retrieve title and author
@@ -76,22 +100,19 @@ def docxToEpub(input_docx, output_epub):
         ]
     )
 
-    toc_file_path = 'EPUB/toc.ncx'
-    content_file_path = 'EPUB/content.opf'
-    nav_file_path = 'EPUB/nav.xhtml'
-    title_page_file_path = 'EPUB/text/title_page.xhtml'
-    ch001_file_path = 'EPUB/text/ch001.xhtml'
     toc_data = ''
     content_data = ''
     nav_data = ''
     title_page_data = ''
     update_required = True
+    rewrite_whole_file = False
 
     # Read and modify files content in epub 
     with ZipFile(epub_file_path, 'r', metadata_encoding='utf-8') as epub:
         # If header of second page = header of title page --> merge
         title_page_data = epub.read(title_page_file_path).decode("utf-8")
-        ch001_data = epub.read(ch001_file_path).decode("utf-8")
+        ch001_data = epub.read(ch00X_file_path.format(1)).decode("utf-8")
+        ch002_data = epub.read(ch00X_file_path.format(2)).decode("utf-8")
         title_page_header = re.search(r'<h1 {0,1}(class=\S*)?>(.*?)</h1>', title_page_data, flags=re.MULTILINE|re.DOTALL)
         ch001_header = re.search(r'<h1 {0,1}(class=\S*)?>(.*?)</h1>', ch001_data, flags=re.MULTILINE|re.DOTALL)
         
@@ -158,21 +179,23 @@ def docxToEpub(input_docx, output_epub):
             logging.info(ch001_header)
             update_required = False
 
+        # Test for RTL characters in title_page, ch001 and ch002
+        if (re.search(r'<span dir="rtl">(.*?)</span>', title_page_data, flags=re.MULTILINE|re.DOTALL)):
+            rewrite_whole_file = True
+        elif (re.search(r'<span dir="rtl">(.*?)</span>', ch001_data, flags=re.MULTILINE|re.DOTALL)):
+            rewrite_whole_file = True
+        elif (re.search(r'<span dir="rtl">(.*?)</span>', ch002_data, flags=re.MULTILINE|re.DOTALL)):
+            rewrite_whole_file = True
+
+    if (rewrite_whole_file):
+        with UpdateableZipFile(epub_file_path, "a") as o:
+            text_files = [text_file_path for text_file_path in epub.namelist() if text_folder in text_file_path]
+            for text_file_path in text_files:
+                o.writestr(text_file_path, str.encode(removeRtl(o.open(text_file_path).read().decode("utf-8"))))
+
     if (update_required):
         # Update archive (epub) with modified files
-        with UpdateableZipFile(epub_file_path, "a") as o:
-            # Overwrite toc file
-            o.writestr(toc_file_path, str.encode(toc_data))
-            # Overwrite content file
-            o.writestr(content_file_path, str.encode(content_data))
-            # Overwrite nav file
-            o.writestr(nav_file_path, str.encode(nav_data))
-
-            # Remove ch001.xhtml from text folder
-            o.remove_file(ch001_file_path)
-            # Overwrite title_page.xhtml
-            o.writestr(title_page_file_path, str.encode(title_page_data))
-
+        updateCh001Archive(epub_file_path, toc_data, content_data, nav_data, title_page_data)
 
 def pathFunction(input):
     input_file_path = input.as_posix()
@@ -187,7 +210,7 @@ def pathFunction(input):
 
 def log_result(retval):
     results.append(retval)
-    if len(results) % (len(files_list)//10) == 0:
+    if (len(files_list)//10 == 0 or len(results) % (len(files_list)//10) == 0):
         print('{:.0%} done'.format(len(results)/len(files_list)))
 
 if __name__ == '__main__':

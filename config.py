@@ -309,24 +309,9 @@ not_header_words = [
 ]
 
 # docxToEpub configuration
-epub_input_folder = "0 - Input EPUB"
-METADATA = {
-    "title": "gtg",
-    "language": "en",
-    "creator": "",
-    "rights": "All rights reserved.",
-}
-# METADATA = {
-#     "identifier": "",
-#     "title": "",
-#     "description": "",
-#     "language": "en",
-#     "creator": "",
-#     "rights": "All rights reserved.",
-#     "long_rights": ["The right of the creator to be identified as the author of the Work has been asserted by them in accordance with the Copyright, Designs and Patents Act 1988. This creator supports copyright. Copyright gives creators space to explore and provides for their long-term ability to sustain themselves from their work. Thank you for buying this work and for complying with copyright laws by not reproducing, scanning, or distributing any part of it without permission. Your support will contribute to future works by the creator."],
-#     "publisher": "Qwyre Publishing",
-#     "publisher_uri": "https://qwyre.com",
-#     "work-uri": "https://gavinchait.com",
-#     "date": "2017-07-23",
-#     "subject": ["science fiction", "african mythology"]
-# }
+toc_file_path = 'EPUB/toc.ncx'
+content_file_path = 'EPUB/content.opf'
+nav_file_path = 'EPUB/nav.xhtml'
+text_folder = 'EPUB/text/'
+title_page_file_path = text_folder + 'title_page.xhtml'
+ch00X_file_path = text_folder + 'ch00{0}.xhtml'
