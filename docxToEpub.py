@@ -24,6 +24,25 @@ logging.basicConfig(
         ]
     )
 
+def tocRemoveCh001(toc_file):
+    # Add playOrder and class elements to each navPoint except first (0)
+    toc_file = re.sub(r'navPoint-([1-9]{1}\d*)"', r'navPoint-\1" playOrder="\1" class="chapter"', toc_file)
+    # Remove navPoint-0 element (wrong title)
+    # toc_file = re.sub(r'\s+<navPoint id="navPoint-0" playOrder="0" class="chapter">.*?</navPoint>', '', toc_file, flags=re.MULTILINE|re.DOTALL)
+    toc_file = re.sub(r'\s+<navPoint id="navPoint-0">.*?</navPoint>', '', toc_file, flags=re.MULTILINE|re.DOTALL)
+    # Replace first navPoint class (chapter --> titlepage)
+    toc_file = toc_file.replace('<navPoint id="navPoint-1" playOrder="1" class="chapter">', '<navPoint id="navPoint-1" playOrder="1" class="titlepage">')
+    return toc_file
+
+def contentRemoveCh001(content_file):
+    content_file = re.sub(r'\s+<item id="ch001_xhtml" href="text/ch001\.xhtml" media-type="application/xhtml\+xml" />', '', content_file, flags=re.MULTILINE)
+    content_file = re.sub(r'\s+<itemref idref="ch001_xhtml" />', '', content_file, flags=re.MULTILINE)
+    return content_file
+
+def navRemoveCh001(nav_file):
+    nav_data = re.sub(r'<li id="toc-li-1"><a href="text/ch001.xhtml">.*?</a></li>', '', nav_file, flags=re.MULTILINE|re.DOTALL)
+    return nav_data
+
 def docxToEpub(input_docx, output_epub):
     # Open document to retrieve title and author
     document = Document(input_docx)
@@ -70,35 +89,22 @@ def docxToEpub(input_docx, output_epub):
 
     # Read and modify files content in epub 
     with ZipFile(epub_file_path, 'r', metadata_encoding='utf-8') as epub:
-        toc_data = epub.read(toc_file_path).decode("utf-8") 
-        
         # If header of second page = header of title page --> merge
         title_page_data = epub.read(title_page_file_path).decode("utf-8")
         ch001_data = epub.read(ch001_file_path).decode("utf-8")
         title_page_header = re.search(r'<h1 {0,1}(class=\S*)?>(.*?)</h1>', title_page_data, flags=re.MULTILINE|re.DOTALL)
         ch001_header = re.search(r'<h1 {0,1}(class=\S*)?>(.*?)</h1>', ch001_data, flags=re.MULTILINE|re.DOTALL)
         
+        # If ch001 is an extension of title_page, start the merge process
         if (title_page_header and ch001_header and title_page_header.group(2) == ch001_header.group(2)):
             ## TOC file --> Remove ch001
-            # Add playOrder and class elements to each navPoint except first (0)
-            toc_data = re.sub(r'navPoint-([1-9]{1}\d*)"', r'navPoint-\1" playOrder="\1" class="chapter"', toc_data)
-            # Remove navPoint-0 element (wrong title)
-            # toc_file = re.sub(r'\s+<navPoint id="navPoint-0" playOrder="0" class="chapter">.*?</navPoint>', '', toc_file, flags=re.MULTILINE|re.DOTALL)
-            toc_data = re.sub(r'\s+<navPoint id="navPoint-0">.*?</navPoint>', '', toc_data, flags=re.MULTILINE|re.DOTALL)
-            # Replace first navPoint class (chapter --> titlepage)
-            toc_data = toc_data.replace('<navPoint id="navPoint-1" playOrder="1" class="chapter">', '<navPoint id="navPoint-1" playOrder="1" class="titlepage">')
-            # print(toc_data)
+            toc_data = tocRemoveCh001(epub.read(toc_file_path).decode("utf-8") )
 
             ## Content file --> Remove ch001 lines
-            content_data = epub.read(content_file_path).decode("utf-8") 
-            content_data = re.sub(r'\s+<item id="ch001_xhtml" href="text/ch001\.xhtml" media-type="application/xhtml\+xml" />', '', content_data, flags=re.MULTILINE)
-            content_data = re.sub(r'\s+<itemref idref="ch001_xhtml" />', '', content_data, flags=re.MULTILINE)       
-            # print(content_data)
+            content_data = contentRemoveCh001(epub.read(content_file_path).decode("utf-8"))      
 
             ## Nav file --> Remove ch001 part
-            nav_data = epub.read(nav_file_path).decode("utf-8") 
-            nav_data = re.sub(r'<li id="toc-li-1"><a href="text/ch001.xhtml">.*?</a></li>', '', nav_data, flags=re.MULTILINE|re.DOTALL)
-            # print(nav_data)
+            nav_data = navRemoveCh001(epub.read(nav_file_path).decode("utf-8"))
 
             ch001_data = re.findall(r'<p>.*?</p>', ch001_data, flags=re.MULTILINE|re.DOTALL)
 
