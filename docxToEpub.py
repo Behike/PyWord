@@ -26,7 +26,6 @@ logging.basicConfig(
 
 # Remove RTL span from string
 def removeRtl(input_file):
-    logging.info(input_file)
     return re.sub(r'<span dir="rtl">(.*?)</span>', r'\1', input_file, flags=re.MULTILINE|re.DOTALL)
 
 # Remove ch001 from TOC file
@@ -112,7 +111,6 @@ def docxToEpub(input_docx, output_epub):
         # If header of second page = header of title page --> merge
         title_page_data = epub.read(title_page_file_path).decode("utf-8")
         ch001_data = epub.read(ch00X_file_path.format(1)).decode("utf-8")
-        ch002_data = epub.read(ch00X_file_path.format(2)).decode("utf-8")
         title_page_header = re.search(r'<h1 {0,1}(class=\S*)?>(.*?)</h1>', title_page_data, flags=re.MULTILINE|re.DOTALL)
         ch001_header = re.search(r'<h1 {0,1}(class=\S*)?>(.*?)</h1>', ch001_data, flags=re.MULTILINE|re.DOTALL)
         
@@ -175,16 +173,16 @@ def docxToEpub(input_docx, output_epub):
             else:
                 title_page_data = title_page_data.replace('<p class=""></p>', ch001_data)
         else:
-            logging.info(title_page_header)
-            logging.info(ch001_header)
             update_required = False
 
         # Test for RTL characters in title_page, ch001 and ch002
+        text_files = [text_file_path for text_file_path in epub.namelist() if text_folder in text_file_path]
+
         if (re.search(r'<span dir="rtl">(.*?)</span>', title_page_data, flags=re.MULTILINE|re.DOTALL)):
             rewrite_whole_file = True
         elif (re.search(r'<span dir="rtl">(.*?)</span>', ch001_data, flags=re.MULTILINE|re.DOTALL)):
             rewrite_whole_file = True
-        elif (re.search(r'<span dir="rtl">(.*?)</span>', ch002_data, flags=re.MULTILINE|re.DOTALL)):
+        elif ((ch00X_file_path.format(2) in text_files) and re.search(r'<span dir="rtl">(.*?)</span>', epub.read(ch00X_file_path.format(2)).decode("utf-8"), flags=re.MULTILINE|re.DOTALL)):
             rewrite_whole_file = True
 
     if (rewrite_whole_file):
@@ -211,7 +209,7 @@ def pathFunction(input):
 def log_result(retval):
     results.append(retval)
     if (len(files_list)//10 == 0 or len(results) % (len(files_list)//10) == 0):
-        print('{:.0%} done'.format(len(results)/len(files_list)))
+        logging.info('{:.0%} done'.format(len(results)/len(files_list)))
 
 if __name__ == '__main__':
     start_time = time.time()
@@ -228,7 +226,7 @@ if __name__ == '__main__':
             print("Skipping " + files_list[i].as_posix())
             files_list.remove(files_list[i])
 
-    pool = ThreadPool(8)
+    pool = ThreadPool(4)
 
     results = []
     for item in files_list:
