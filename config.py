@@ -4,7 +4,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.section import WD_ORIENTATION
 
 # Choose log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-debug_level = "DEBUG"
+debug_level = "INFO"
 
 ## Folder where to search for/save files
 # Skip files in those folders (case insensitive)
@@ -16,7 +16,7 @@ skipped_folders = [
 input_folder = "0 - Input"
 output_folder = "0 - Output"
 # Missing chapters script
-input_docx_folder = "0 - Output"
+input_chapters_folder = "0 - Output"
 output_chapters_folder = "0 - Output chapters"
 # Docx to Epub script
 input_docx_folder = "0 - Output"
