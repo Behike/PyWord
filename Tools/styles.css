@@ -1,10 +1,10 @@
 /* Title */
-title {
+h1 {
     color: black;
     font-family: "Cambria", serif;
     font-size: 36pt;
     margin-top: 45pt;
-    margin-bottom:45pt;
+    margin-bottom: 0pt;
     text-align:center;
     page-break-before:always;
 }
@@ -22,15 +22,29 @@ h2 {
     page-break-inside:avoid;
     page-break-after:avoid;
 }
-/* Subtitle */
+/* Sub-Title (group of books title) */
 h3 {
+    color: black;
+    font-family: "Palatino Linotype", serif;
+    font-size: 14pt;
+    font-weight: normal;
+    margin: 0pt 0pt 6pt;
+    margin-top: 0pt;
+    margin-bottom: 45pt;
+    text-align:center;
+    page-break-before:always;
+    page-break-inside:avoid;
+    page-break-after:avoid;
+}
+/* Copyrights */
+h4 {
     color: black;
     font-family: "Palatino Linotype", serif;
     font-size: 9pt;
     margin-bottom:45pt;
     text-align:center;
 }
-/* Norma */
+/* Normal */
 p {
     color: black;
     font-family: "Palatino Linotype", serif;
