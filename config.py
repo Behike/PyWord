@@ -19,7 +19,7 @@ output_folder = "0 - Output"
 input_chapters_folder = "0 - Output"
 output_chapters_folder = "0 - Output chapters"
 # Docx to Epub script
-input_docx_folder = "0 - Output"
+input_epub_folder = "0 - Output"
 output_epub_folder = "0 - Output EPUB"
 
 # A chapter/Heading 1 can be recognized if it starts with one of header_1_names_list
@@ -30,7 +30,10 @@ CHAPTER_MAX_LENGTH = 30
 header_1_names_list = [
     "CHAPTER",
     "EPILOGUE",
-    "PROLOGUE"
+    "PROLOGUE",
+    "ACKNOWLEDGMENT",
+    "ACKNOWLEDGMENTS",
+    "FOREWORD"
 ]
 
 # Items that should not be capitalized in headings/titles
