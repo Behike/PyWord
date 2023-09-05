@@ -4,111 +4,110 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.section import WD_ORIENTATION
 
 # Choose log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-debug_level = "INFO"
+DEBUG_LEVEL = "INFO"
 
 ## Folder where to search for/save files
 # Skip files in those folders (case insensitive)
-skipped_folders = [
-    "PAST",
-    "OLD"
-]
+SKIPPED_FOLDERS = ["PAST", "OLD"]
 # Main script
-input_folder = "0 - Input"
-output_folder = "0 - Output"
+INPUT_FOLDER = "0 - Input"
+OUTPUT_FOLDER = "0 - Output"
 # Missing chapters script
-input_chapters_folder = "0 - Output"
-output_chapters_folder = "0 - Output chapters"
+INPUT_CHAPTERS_FOLDER = "0 - Output"
+OUTPUT_CHAPTERS_FOLDER = "0 - Output chapters"
 # Docx to Epub script
-input_epub_folder = "0 - Output"
-output_epub_folder = "0 - Output EPUB"
+INPUT_EPUB_FOLDER = "0 - Output"
+OUTPUT_EPUB_FOLDER = "0 - Output EPUB"
 
 # A chapter/Heading 1 can be recognized if it starts with one of header_1_names_list
 # word and the whole paragraph is at most 75 characters long
 CHAPTER_MAX_LENGTH = 30
 
 # First item is the one written if no header is present (case insensitive)
-header_1_names_list = [
+HEADER_1_NAMES_LIST = [
     "CHAPTER",
     "EPILOGUE",
     "PROLOGUE",
     "ACKNOWLEDGMENT",
     "ACKNOWLEDGMENTS",
-    "FOREWORD"
+    "FOREWORD",
 ]
 
 # Items that should not be capitalized in headings/titles
-capitalize_words_list = [
-    "of",
-    "in",
-    "and",
-    "a"
-]
-    
+CAPITALIZE_WORDS_LIST = ["of", "in", "and", "a"]
+
 ## Styles definition, cannot add new properties from here for now
 # Title
-title_paragraph_alignment = WD_ALIGN_PARAGRAPH.CENTER
-title_paragraph_page_break_before = True
-title_paragraph_space_before = Pt(45)
-title_paragraph_space_after = Pt(45)
-title_font_name = "Cambria"
-title_font_size = Pt(36)
-title_font_color = RGBColor(0x0,0x0,0x0)
-title_font_bold = False
-title_font_italic = False
-title_font_underline = False
+TITLE_PARAGRAPH_ALIGNMENT = WD_ALIGN_PARAGRAPH.CENTER
+TITLE_PARAGRAPH_PAGE_BREAK_BEFORE = True
+TITLE_PARAGRAPH_SPACE_BEFORE = Pt(45)
+TITLE_PARAGRAPH_SPACE_AFTER = Pt(45)
+TITLE_FONT_NAME = "Cambria"
+TITLE_FONT_SIZE = Pt(36)
+TITLE_FONT_COLOR = RGBColor(0x0, 0x0, 0x0)
+TITLE_FONT_BOLD = False
+TITLE_FONT_ITALIC = False
+TITLE_FONT_UNDERLINE = False
 
 # Heading 1
-heading_1_paragraph_alignment = WD_ALIGN_PARAGRAPH.CENTER
-heading_1_paragraph_page_break_before = True
-heading_1_paragraph_space_before = Pt(45)
-heading_1_paragraph_space_after = Pt(45)
-heading_1_font_name = "Palatino Linotype"
-heading_1_font_size = Pt(36)
-heading_1_font_color = RGBColor(0x0,0x0,0x0)
-heading_1_font_bold = False
-heading_1_font_italic = False
-heading_1_font_underline = False
+HEADING_1_PARAGRAPH_ALIGNMENT = WD_ALIGN_PARAGRAPH.CENTER
+HEADING_1_PARAGRAPH_PAGE_BREAK_BEFORE = True
+HEADING_1_PARAGRAPH_SPACE_BEFORE = Pt(45)
+HEADING_1_PARAGRAPH_SPACE_AFTER = Pt(45)
+HEADING_1_FONT_NAME = "Palatino Linotype"
+HEADING_1_FONT_SIZE = Pt(36)
+HEADING_1_FONT_COLOR = RGBColor(0x0, 0x0, 0x0)
+HEADING_1_FONT_BOLD = False
+HEADING_1_FONT_ITALIC = False
+HEADING_1_FONT_UNDERLINE = False
 
 # Normal
-normal_paragraph_alignment = WD_ALIGN_PARAGRAPH.LEFT
-normal_paragraph_first_line_indent = Pt(0)
-normal_paragraph_left_indent = Pt(0)
-normal_paragraph_right_indent = Pt(0)
-normal_paragraph_space_before = Pt(0)
-normal_paragraph_space_after = Pt(6)
-normal_paragraph_page_break_before = False
-normal_font_name = "Palatino Linotype"
-normal_font_size = Pt(10)
-normal_font_color = RGBColor(0x0,0x0,0x0)
-normal_font_bold = None
-normal_font_italic = None
-normal_font_underline = None
+NORMAL_PARAGRAPH_ALIGNMENT = WD_ALIGN_PARAGRAPH.LEFT
+NORMAL_PARAGRAPH_FIRST_LINE_INDENT = Pt(0)
+NORMAL_PARAGRAPH_LEFT_INDENT = Pt(0)
+NORMAL_PARAGRAPH_RIGHT_INDENT = Pt(0)
+NORMAL_PARAGRAPH_SPACE_BEFORE = Pt(0)
+NORMAL_PARAGRAPH_SPACE_AFTER = Pt(6)
+NORMAL_PARAGRAPH_PAGE_BREAK_BEFORE = False
+NORMAL_FONT_NAME = "Palatino Linotype"
+NORMAL_FONT_SIZE = Pt(10)
+NORMAL_FONT_COLOR = RGBColor(0x0, 0x0, 0x0)
+NORMAL_FONT_BOLD = None
+NORMAL_FONT_ITALIC = None
+NORMAL_FONT_UNDERLINE = None
 
 # Subtitle (inherits other properties from Normal)
-subtitle_inherits_from = "Normal"
-subtitle_paragraph_alignment = WD_ALIGN_PARAGRAPH.CENTER
-subtitle_paragraph_space_after = Pt(45)
-subtitle_font_name = "Palatino Linotype"
-subtitle_font_size = Pt(9)
-subtitle_font_bold = False
-subtitle_font_italic = False
-subtitle_font_underline = False
+SUBTITLE_INHERITS_FROM = "Normal"
+SUBTITLE_PARAGRAPH_ALIGNMENT = WD_ALIGN_PARAGRAPH.CENTER
+SUBTITLE_PARAGRAPH_SPACE_AFTER = Pt(45)
+SUBTITLE_FONT_NAME = "Palatino Linotype"
+SUBTITLE_FONT_SIZE = Pt(9)
+SUBTITLE_FONT_BOLD = False
+SUBTITLE_FONT_ITALIC = False
+SUBTITLE_FONT_UNDERLINE = False
 
 ## Section configurations
 # Page
-page_orientation = WD_ORIENTATION.PORTRAIT
-page_width = Mm(210)
-page_height = Mm(297)
-top_margin = Inches(1)
-bottom_margin = Inches(1)
-left_margin = Inches(1)
-right_margin = Inches(1)
+PAGE_ORIENTATION = WD_ORIENTATION.PORTRAIT
+PAGE_WIDTH = Mm(210)
+PAGE_HEIGHT = Mm(297)
+TOP_MARGIN = Inches(1)
+BOTTOM_MARGIN = Inches(1)
+LEFT_MARGIN = Inches(1)
+RIGHT_MARGIN = Inches(1)
 # Header/Footer
-keep_headers = False
-keep_footers = False
+KEEP_HEADERS = False
+KEEP_FOOTERS = False
 
-def copyrightText(created_year, author):
-    copyright_text = "Copyright © " + str(created_year) + " " + author + "\nAll rights reserved. No parts of this publication may be reproduced, \
+
+def copyright_text(created_year, author):
+    """Create and return a copyright text after adding year of creation and author name"""
+    text = (
+        "Copyright © "
+        + str(created_year)
+        + " "
+        + author
+        + "\nAll rights reserved. No parts of this publication may be reproduced, \
 stored in a retrieval system, or transmitted in any form or by any means, electronic, mechanical, photocopying, \
 recording, or otherwise, without the prior written permission of the copyright owner.\nThis book is sold subject \
 to the condition that it shall not, by way of trade or otherwise, be lent, resold, hired out, or otherwise circulated \
@@ -116,7 +115,9 @@ without the publisher’s prior consent in any form of binding or cover other th
 without a similar condition including this condition being imposed on the subsequent purchaser. Under no circumstances \
 may any part of this book be photocopied for resale.\nThis is a work of fiction. Any similarity between the characters \
 and situations within its pages and places or persons, living or dead, is unintentional and co-incidental."
-    return copyright_text
+    )
+    return text
+
 
 number_dict = {
     "TEN": 10,
@@ -210,7 +211,6 @@ number_dict = {
     "NINETY-EIGHT": 98,
     "NINETY-NINE": 99,
     "ONE HUNDRED": 100,
-
     "TWENTY ONE": 21,
     "TWENTY TWO": 22,
     "TWENTY THREE": 23,
@@ -283,7 +283,6 @@ number_dict = {
     "NINETY SEVEN": 97,
     "NINETY EIGHT": 98,
     "NINETY NINE": 99,
-
     "ONE": 1,
     "TWO": 2,
     "THREE": 3,
@@ -292,29 +291,29 @@ number_dict = {
     "SIX": 6,
     "SEVEN": 7,
     "EIGHT": 8,
-    "NINE": 9
+    "NINE": 9,
 }
 
 # If one of the following words is present in a sentence, the paragraph won't become a header
 not_header_words = [
-    'minute',
-    'minutes',
-    'hour',
-    'hours',
-    'week',
-    'weeks',
-    'day',
-    'days',
-    'month',
-    'months',
-    'year',
-    'years'
+    "minute",
+    "minutes",
+    "hour",
+    "hours",
+    "week",
+    "weeks",
+    "day",
+    "days",
+    "month",
+    "months",
+    "year",
+    "years",
 ]
 
 # docxToEpub configuration
-toc_file_path = 'EPUB/toc.ncx'
-content_file_path = 'EPUB/content.opf'
-nav_file_path = 'EPUB/nav.xhtml'
-text_folder = 'EPUB/text/'
-title_page_file_path = text_folder + 'title_page.xhtml'
-ch00X_file_path = text_folder + 'ch00{0}.xhtml'
+TOC_FILE_PATH = "EPUB/toc.ncx"
+CONTENT_FILE_PATH = "EPUB/content.opf"
+NAV_FILE_PATH = "EPUB/nav.xhtml"
+TEXT_FOLDER = "EPUB/text/"
+TITLE_PAGE_FILE_PATH = TEXT_FOLDER + "title_page.xhtml"
+CH00X_FILE_PATH = TEXT_FOLDER + "ch00{0}.xhtml"
