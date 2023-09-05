@@ -1,3 +1,4 @@
 python-docx
-pypandoc-binary
-updateable-zip-file
+beautifulsoup4
+Jinja2
+PyDocX
