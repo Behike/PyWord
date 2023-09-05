@@ -317,3 +317,6 @@ NAV_FILE_PATH = "EPUB/nav.xhtml"
 TEXT_FOLDER = "EPUB/text/"
 TITLE_PAGE_FILE_PATH = TEXT_FOLDER + "title_page.xhtml"
 CH00X_FILE_PATH = TEXT_FOLDER + "ch00{0}.xhtml"
+
+# New configurations
+TEMPLATES = "Templates/"
