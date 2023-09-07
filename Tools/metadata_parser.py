@@ -1,5 +1,6 @@
 """Get docx metadata required for Epub creation and HTML parsing"""
 from dataclasses import dataclass
+import sys
 
 from docx import Document
 from bs4 import BeautifulSoup
@@ -65,14 +66,9 @@ def parse_html(epub_data, html):
     if not bool(epub_data.subtitle) and soup.h3:
         epub_data.subtitle = soup.h3.text
 
-    return (
-        EpubInfo(
-            epub_data.title,
-            epub_data.rights,
-            epub_data.creator,
-            epub_data.created_year,
-            epub_data.subtitle,
-            epub_data.language,
-        ),
-        soup,
-    )
+    return epub_data
+
+
+if __name__ == "__main__":
+    print("Should NOT be executed directly")
+    sys.exit(-1)
