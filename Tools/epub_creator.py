@@ -13,9 +13,6 @@ from Tools.config import TEMPLATES
 import sys
 
 
-
-
-
 def create_epub(output_file, epub, soup):
     """Create epub file from EpubInfo and BeautifulSoup html"""
     book = Epub(
