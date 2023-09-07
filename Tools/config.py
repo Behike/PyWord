@@ -119,7 +119,7 @@ and situations within its pages and places or persons, living or dead, is uninte
     return text
 
 
-number_dict = {
+NUMBER_DICT = {
     "TEN": 10,
     "ELEVEN": 11,
     "TWELVE": 12,
@@ -295,7 +295,7 @@ number_dict = {
 }
 
 # If one of the following words is present in a sentence, the paragraph won't become a header
-not_header_words = [
+NOT_HEADER_WORDS = [
     "minute",
     "minutes",
     "hour",
