@@ -20,8 +20,11 @@ INPUT_EPUB_FOLDER = "0 - Output"
 OUTPUT_EPUB_FOLDER = "0 - Output EPUB"
 
 # A chapter/Heading 1 can be recognized if it starts with one of header_1_names_list
-# word and the whole paragraph is at most 75 characters long
+# word and the whole paragraph is at most 30 characters long
 CHAPTER_MAX_LENGTH = 30
+
+# Maximum of characters since the beginning for a h3/Heading 3 to be considered as a subtitle
+SUBTITLE_MAX_SEARCH = 40
 
 # First item is the one written if no header is present (case insensitive)
 HEADER_1_NAMES_LIST = [
