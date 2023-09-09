@@ -8,7 +8,7 @@ from jinja2 import Environment, FileSystemLoader
 from pypub import Epub, create_chapter_from_html
 
 # Get docx infos
-from Tools.config import TEMPLATES
+from config import TEMPLATES
 
 import sys
 
