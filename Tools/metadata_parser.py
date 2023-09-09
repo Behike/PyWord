@@ -5,7 +5,7 @@ import sys
 from docx import Document
 from bs4 import BeautifulSoup
 
-from Tools.config import copyright_text
+from config import copyright_text, SUBTITLE_MAX_SEARCH
 
 
 @dataclass
@@ -63,7 +63,8 @@ def parse_html(epub_data, html):
     elif not bool(epub_data.title) and soup.h1 is None:
         print("[WARNING] No title found in docx file")
 
-    if not bool(epub_data.subtitle) and soup.h3:
+    # If no subtitle is found, use the h3 tag if there is only one at the beginning of the document
+    if not bool(epub_data.subtitle) and len(soup.body.find_all("h3")) == 1 and str(soup.body).find(str(soup.h3)) and str(soup.body).find(str(soup.h3)) < SUBTITLE_MAX_SEARCH:
         epub_data.subtitle = soup.h3.text
 
     return epub_data
