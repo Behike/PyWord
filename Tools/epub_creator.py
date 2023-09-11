@@ -39,7 +39,7 @@ def create_epub(output_file, epub, soup):
 
         for header in headers_list:
             chapter_text = ""
-            print(f"Adding chapter {headers_list.index(header)+1}/{len(headers_list)}")
+            # print(f"Adding chapter {headers_list.index(header)+1}/{len(headers_list)}")
             while header.next_sibling is not None and header.next_sibling.name != "h2":
                 chapter_text += str(header.next_sibling)
                 header.next_sibling.extract()
