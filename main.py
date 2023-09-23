@@ -8,7 +8,8 @@ from pathlib import Path
 from epub_creator import create_epub
 from html_parser import docx_to_html, iterate_html
 from metadata_parser import parse_docx, parse_html
-from config import (
+
+from Config.config import (
     INPUT_FOLDER,
     OUTPUT_FOLDER,
     DEBUG_LEVEL
@@ -46,7 +47,7 @@ if __name__ == '__main__':
                 file_extension = input_docx_file[input_docx_file.rfind('.')+1:]
 
                 html_file = os.path.join(output_folder_path, filename + ".html")
-
+                
                 HTML = docx_to_html(input_docx_file)
                 epub_data = parse_docx(input_docx_file)
                 epub_data = parse_html(epub_data, HTML)
@@ -60,7 +61,7 @@ if __name__ == '__main__':
                 WORDS_COUNT = 0
             except (FileNotFoundError, PermissionError, ValueError) as e:
                 logging.error(str(e))
-                logging.error("    ⚠️ %s failed ⚠️ \n", input_docx_file)
+                logging.error("    /!\\ %s failed /!\\ \n", input_docx_file)
 
     logging.info("\n==================== Finished in %ss ====================\n\n", (time.time() - start_time))
     variable = input('Press enter to exit')

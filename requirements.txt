@@ -1,5 +1,5 @@
 python-docx
 beautifulsoup4
-Jinja2
-PyDocX
+jinja2
+PyDocX @ git+https://github.com/PolicyHarbor/pydocx@master
 pypub3 @ git+https://github.com/Behike/pypub@master
