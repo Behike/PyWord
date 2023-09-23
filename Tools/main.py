@@ -2,7 +2,6 @@
 import os
 import sys
 import datetime
-import traceback
 import logging
 import time
 from pathlib import Path
@@ -46,11 +45,7 @@ if __name__ == '__main__':
             try:
                 file_extension = input_docx_file[input_docx_file.rfind('.')+1:]
 
-                # print(f"Converting {filename}")
-                # print("output_folder_path:", output_folder_path)
-
                 html_file = os.path.join(output_folder_path, filename + ".html")
-                # print("html_file:", html_file)
 
                 HTML = docx_to_html(input_docx_file)
                 epub_data = parse_docx(input_docx_file)
@@ -58,7 +53,6 @@ if __name__ == '__main__':
                 new_soup, WORDS_COUNT = iterate_html(epub_data, HTML)
 
                 epub_file = os.path.join(output_folder_path, f"{filename} - {WORDS_COUNT}.epub")
-                # print("epub_file: ", epub_file)
                 create_epub(epub_file, epub_data, new_soup)
 
                 if WORDS_COUNT == 0:
@@ -68,5 +62,5 @@ if __name__ == '__main__':
                 logging.error(str(e))
                 logging.error("    ⚠️ %s failed ⚠️ \n", input_docx_file)
 
-    logging.info("\n==================== Finished in %ss ====================\n\n\n", (time.time() - start_time))
+    logging.info("\n==================== Finished in %ss ====================\n\n", (time.time() - start_time))
     variable = input('Press enter to exit')
