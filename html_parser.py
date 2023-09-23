@@ -71,7 +71,7 @@ def capitalize_sentences(text):
 def chapter_finder(text):
     """Test if text is (or can be) a chapter and format it"""
     is_chapter = False
-    not_header_words_present = [ele for ele in NOT_HEADER_WORDS if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text)]   
+    not_header_words_present = [ele for ele in NOT_HEADER_WORDS if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text)]
 
     # If the paragraph is at most CHAPTER_MAX_LENGTH characters long and starts with one of the header_1_names_list words
     if ((len(text) <= CHAPTER_MAX_LENGTH) and (not not_header_words_present) and text[-1] != '.'):
@@ -276,7 +276,7 @@ def iterate_html(metadata: EpubInfo, html):
 
                 most_common_tag = HEADERS_TO_HTML["Chapter"]
             else:
-                logger.info("More than %s chapters are missing (%s), skipping this file", MAX_MISSING_CHAPTERS, missing_chapter)    
+                logger.info("More than %s chapters are missing (%s), skipping this file", MAX_MISSING_CHAPTERS, missing_chapter)
 
         soup = BeautifulSoup(str_soup, "html.parser")
         body_tag = soup.body
@@ -286,7 +286,7 @@ def iterate_html(metadata: EpubInfo, html):
         LIST_OF_ACTIONS_LOGS = ""
 
         old_child = child
-        
+
         # Remove empty paragraphs
         if child.get_text().strip() == "":
             # logger.info("Empty paragraph skipped")

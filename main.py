@@ -58,7 +58,7 @@ def log_result(retval):
     """Show progress"""
     results.append(retval)
     if len(files_list)//10 == 0 or len(results) % (len(files_list)//10) == 0:
-        print('{:.0%} done'.format(len(results)/len(files_list)))
+        logging.info("%d%% done", 100 * len(results) / len(files_list))
 
 
 if __name__ == '__main__':
