@@ -327,7 +327,7 @@ def iterate_html(metadata: EpubInfo, html):
             logger.info("%s > %s --> %s", LIST_OF_ACTIONS_LOGS, old_child, child)
             # logging.debug("%s \"%s\" --> \"%s\"", list_of_actions_logs, old_child, child)
 
-    logger.info("Found %s paragraphs and %s words", child_count, word_count)
+    logger.info("Found %s chapters and %s words", chapter_number-1, word_count)
 
     # 1] We have specific styles for chapters
     # 2] We already have the titles/copyrights written at the very beginning
