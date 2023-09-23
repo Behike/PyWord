@@ -2,3 +2,4 @@ python-docx
 beautifulsoup4
 Jinja2
 PyDocX
+pypub3 @ git+https://github.com/Behike/pypub@master

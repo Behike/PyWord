@@ -243,13 +243,10 @@ def iterate_html(metadata: EpubInfo, html):
                 if chapter_match[7] != '':
                     new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + h1_html_tag_b
 
-                logger.info(chapter_match)
                 old_text = sub(r"\s+", " ", chapter_match[0]).strip() # Replace multiple spaces with only one space
                 logger.info("%s --> %s", old_text, new_text)
                 str_soup = str_soup.replace(chapter_match[0], new_text)
 
-                # int(chapter_match[5])
-                # if (int(chapter_match[5]) != int(chapter_match[5])+1):
             most_common_tag = HEADERS_TO_HTML["Chapter"]
         else:
             logger.info("More than %s chapters are missing (%s), skipping this file", MAX_MISSING_CHAPTERS, missing_chapter)
