@@ -1,13 +1,19 @@
-import datetime
+"""Main script converting docx files from INPUT_FOLDER to epub files in OUTPUT_FOLDER"""
 import os
-from pathlib import Path
 import sys
+import datetime
+import traceback
+import logging
+import time
+from pathlib import Path
 from epub_creator import create_epub
 from html_parser import docx_to_html, iterate_html
 from metadata_parser import parse_docx, parse_html
-from config import *
-import traceback, logging
-import time, datetime
+from config import (
+    INPUT_FOLDER,
+    OUTPUT_FOLDER,
+    DEBUG_LEVEL
+)
 
 logging.basicConfig(
         format='%(message)s',
@@ -17,10 +23,9 @@ logging.basicConfig(
             logging.StreamHandler(sys.stdout)
         ]
     )
-word_count = 0
 
 
-if __name__ == '__main__':     
+if __name__ == '__main__':
     start_time = time.time()
     logging.info("\n================================ Main script ================================")
     logging.info(datetime.datetime.now())
@@ -34,8 +39,8 @@ if __name__ == '__main__':
         filename = input_docx_file[input_docx_file.rfind('/')+1:input_docx_file.rfind('.')]
         temp_output_file_path = f"{OUTPUT_FOLDER}/{file.relative_to(*file.parts[:1]).as_posix()}"
         output_folder_path = temp_output_file_path[:temp_output_file_path.rfind('/')]
-        
-        if (file.parents[-2] != OUTPUT_FOLDER):
+
+        if file.parents[-2] != OUTPUT_FOLDER:
             logging.info("\nWorking on %s", input_docx_file)
             Path(output_folder_path).mkdir(parents=True, exist_ok=True)
             try:
@@ -47,21 +52,21 @@ if __name__ == '__main__':
                 html_file = os.path.join(output_folder_path, filename + ".html")
                 # print("html_file:", html_file)
 
-                html = docx_to_html(input_docx_file)
+                HTML = docx_to_html(input_docx_file)
                 epub_data = parse_docx(input_docx_file)
-                epub_data = parse_html(epub_data, html)
-                new_soup, words_count = iterate_html(epub_data, html)
+                epub_data = parse_html(epub_data, HTML)
+                new_soup, WORDS_COUNT = iterate_html(epub_data, HTML)
 
-                epub_file = os.path.join(output_folder_path, f"{filename} - {words_count}.epub")
+                epub_file = os.path.join(output_folder_path, f"{filename} - {WORDS_COUNT}.epub")
                 # print("epub_file: ", epub_file)
                 create_epub(epub_file, epub_data, new_soup)
-                
-                if (words_count == 0):
+
+                if WORDS_COUNT == 0:
                     logging.warning("No words were detected in %s (document might be a table)\n", file.name.replace("docx", ""))
-                words_count = 0
-            except Exception:
-                traceback.print_exc()
-                logging.error("    /!\ %s failed /!\ \n", input_docx_file)
+                WORDS_COUNT = 0
+            except (FileNotFoundError, PermissionError, ValueError) as e:
+                logging.error(str(e))
+                logging.error("    ⚠️ %s failed ⚠️ \n", input_docx_file)
 
     logging.info("\n==================== Finished in %ss ====================\n\n\n", (time.time() - start_time))
     variable = input('Press enter to exit')

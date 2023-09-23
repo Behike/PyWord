@@ -1,12 +1,13 @@
 """Get docx metadata required for Epub creation and HTML parsing"""
-from dataclasses import dataclass
 import sys
+import logging
 
-from docx import Document
+from dataclasses import dataclass
 from bs4 import BeautifulSoup
-
 from config import copyright_text, SUBTITLE_MAX_SEARCH
+from docx import Document
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class EpubInfo:
@@ -60,7 +61,7 @@ def parse_html(epub_data, html):
     if not bool(epub_data.title) and soup.h1:
         epub_data.title = soup.h1.text
     elif not bool(epub_data.title) and soup.h1 is None:
-        print("[WARNING] No title found in docx file")
+        logger.info("[WARNING] No title found in docx file")
 
     # If no subtitle is found, use the h3 tag if there is only one at the beginning of the document
     if not bool(epub_data.subtitle) and len(soup.body.find_all("h3")) == 1 and str(soup.body).find(str(soup.h3)) and str(soup.body).find(str(soup.h3)) < SUBTITLE_MAX_SEARCH:
@@ -70,5 +71,5 @@ def parse_html(epub_data, html):
 
 
 if __name__ == "__main__":
-    print("Should NOT be executed directly")
-    sys.exit(-1)
+    logger.info("Nothing to do")
+    sys.exit(0)
