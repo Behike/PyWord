@@ -5,6 +5,7 @@ import logging
 # Convert docx to html
 from collections import Counter
 from re import IGNORECASE, MULTILINE, findall, match, search, escape, sub
+from re import compile as re_compile
 from pydocx import PyDocX
 
 # Work with html
@@ -199,110 +200,86 @@ def iterate_html(metadata: EpubInfo, html):
     body_tag = soup.body
 
     word_count = 0
-    most_common_tag = ''
-    reg_headers = r"h[1-6]"
-    list_of_found_headers = body_tag.find_all(reg_headers)
-    if len(list_of_found_headers) > 1:
-        list_of_tags = []
-        for tag in body_tag.find_all(reg_headers):
-            list_of_tags.append(tag.name)
-
-        most_common_tag = max(list_of_tags, key=Counter(list_of_tags).get)
-        logger.debug("Found multiple '%s', using them as chapters", HTML_TO_WORD_HEADERS[most_common_tag])
-
     child_count = 0
     chapter_number = 1
 
     logger.info("------------------------ First analysis ------------------------")
 
-    # Match a HEADER_1_NAMES_LIST word with punctuation and a number for Chapter keyword
-    # Tag + Chapter keyword + punctuation/space (0+) + digit (1+) + punctuation/space (0+) + anything (0+) + End tag
-    chapter_keywords = '|'.join(HEADER_1_NAMES_LIST)
-    chapter_int_regex = fr"((<(\w+)>)\s*({chapter_keywords})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\]]*[ ]*)([^.]*?)(<\/\3>))"
-    # Tag + Chapter + punctuation/space (0+) + text (1+) + punctuation/space (0+) + anything (0+) + End tag
-    chapter_letter_regex = fr"((<(\w+)>)\s*({chapter_keywords})([ ]*[^\w\s]*[ ]*)([a-zA-Z]+)([ ]*[.-:\]]*[ ]*)([^.]*?)(<\/\3>))"
+    most_common_tag = ''
+    reg_headers = re_compile("h[1-6]")
+    list_of_found_headers = body_tag.find_all(reg_headers)
 
-    chapter_int_match = findall(chapter_int_regex, str(soup), flags=MULTILINE|IGNORECASE)
-    chapter_letter_match = findall(chapter_letter_regex, str(soup), flags=MULTILINE|IGNORECASE)
-    str_soup = str(soup)
+    if len(list_of_found_headers) > 1:
+        list_of_tags = []
+        for tag in list_of_found_headers:
+            list_of_tags.append(tag.name)
 
-    # TODO: Use group name instead of index
-    missing_chapter = 0
-    if chapter_int_match:
-        count = 1
-        for chapter_match in chapter_int_match:
-            if chapter_match[5] != str(count):
-                logger.info("[WARNING] Chapter %s could not be found", count)
-                missing_chapter += 1
-            else:
-                count += 1
+        most_common_tag = max(list_of_tags, key=Counter(list_of_tags).get)
+        logger.info("Found multiple '%s', using them as chapters", HTML_TO_WORD_HEADERS[most_common_tag])
+    else:
+        # Match a HEADER_1_NAMES_LIST word with punctuation and a number for Chapter keyword
+        # Tag + Chapter keyword + punctuation/space (0+) + digit (1+) + punctuation/space (0+) + anything (0+) + End tag
+        chapter_keywords = '|'.join(HEADER_1_NAMES_LIST)
+        chapter_int_regex = fr"((<(\w+)>)\s*({chapter_keywords})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)(<\/\3>))"
+        # Tag + Chapter + punctuation/space (0+) + text (1+) + punctuation/space (0+) + anything (0+) + End tag
+        chapter_letter_regex = fr"((<(\w+)>)\s*({chapter_keywords})([ ]*[^\w\s]*[ ]*)([a-zA-Z]+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)(<\/\3>))"
 
-        if missing_chapter <= MAX_MISSING_CHAPTERS:
+        chapter_int_match = findall(chapter_int_regex, str(soup), flags=MULTILINE|IGNORECASE)
+        chapter_letter_match = findall(chapter_letter_regex, str(soup), flags=MULTILINE|IGNORECASE)
+        str_soup = str(soup)
+
+        # TODO: Use group name instead of index
+        missing_chapter = 0
+        if chapter_int_match:
+            count = 1
             for chapter_match in chapter_int_match:
-                h1_html_tag_a = f"<{HEADERS_TO_HTML['Chapter']}>"
-                h1_html_tag_b = f"</{HEADERS_TO_HTML['Chapter']}>"
-                new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + h1_html_tag_b
-                if chapter_match[7] != '':
-                    new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + h1_html_tag_b
+                if chapter_match[5] != str(count):
+                    logger.info("[WARNING] Chapter %s could not be found", count)
+                    missing_chapter += 1
+                else:
+                    count += 1
 
-                old_text = sub(r"\s+", " ", chapter_match[0]).strip() # Replace multiple spaces with only one space
-                logger.info("%s --> %s", old_text, new_text)
-                str_soup = str_soup.replace(chapter_match[0], new_text)
+            if missing_chapter <= MAX_MISSING_CHAPTERS:
+                for chapter_match in chapter_int_match:
+                    h1_html_tag_a = f"<{HEADERS_TO_HTML['Chapter']}>"
+                    h1_html_tag_b = f"</{HEADERS_TO_HTML['Chapter']}>"
+                    new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + h1_html_tag_b
+                    if chapter_match[7] != '':
+                        new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + h1_html_tag_b
 
-            most_common_tag = HEADERS_TO_HTML["Chapter"]
-        else:
-            logger.info("More than %s chapters are missing (%s), skipping this file", MAX_MISSING_CHAPTERS, missing_chapter)
+                    old_text = sub(r"\s+", " ", chapter_match[0]).strip() # Replace multiple spaces with only one space
+                    logger.info("%s --> %s", old_text, new_text)
+                    str_soup = str_soup.replace(chapter_match[0], new_text)
 
-    elif chapter_letter_match:
-        ###### TO ADAPT ######
-        # for chapter_match in CHAPTER_INT_MATCH:
-        #     if (chapter_match[5] != str(count)):
-        #         logger.info(f"[WARNING] Chapter {count} could not be found")
-        #         missing_chapter += 1
-        #     else:
-        #         count += 1
+                most_common_tag = HEADERS_TO_HTML["Chapter"]
+            else:
+                logger.info("More than %s chapters are missing (%s), skipping this file", MAX_MISSING_CHAPTERS, missing_chapter)
 
-        if missing_chapter <= MAX_MISSING_CHAPTERS:
-            for chapter_match in chapter_letter_match:
-                h1_html_tag_a = f"<{HEADERS_TO_HTML['Chapter']}>"
-                h1_html_tag_b = f"</{HEADERS_TO_HTML['Chapter']}>"
-                new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + h1_html_tag_b
-                if chapter_match[7] != '':
-                    new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + h1_html_tag_b
-                logger.info("%s --> %s", chapter_match[0], new_text)
-                str_soup = str_soup.replace(chapter_match[0], new_text)
+        elif chapter_letter_match:
+            # TODO: Count chapter number in letter
+            # for chapter_match in CHAPTER_INT_MATCH:
+            #     if (chapter_match[5] != str(count)):
+            #         logger.info(f"[WARNING] Chapter {count} could not be found")
+            #         missing_chapter += 1
+            #     else:
+            #         count += 1
 
-            most_common_tag = HEADERS_TO_HTML["Chapter"]
-        else:
-            logger.info("More than %s chapters are missing (%s), skipping this file", MAX_MISSING_CHAPTERS, missing_chapter)
+            if missing_chapter <= MAX_MISSING_CHAPTERS:
+                for chapter_match in chapter_letter_match:
+                    h1_html_tag_a = f"<{HEADERS_TO_HTML['Chapter']}>"
+                    h1_html_tag_b = f"</{HEADERS_TO_HTML['Chapter']}>"
+                    new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + h1_html_tag_b
+                    if chapter_match[7] != '':
+                        new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + h1_html_tag_b
+                    logger.info("%s --> %s", chapter_match[0], new_text)
+                    str_soup = str_soup.replace(chapter_match[0], new_text)
 
-    # Count repetitive patterns (Chapter 1, Chapter 2, Chapter 3, etc.) --> Too much work for some exceptions
-    # else:
-    #     for child in body_tag.children:
-    #         text = child.get_text().strip()
+                most_common_tag = HEADERS_TO_HTML["Chapter"]
+            else:
+                logger.info("More than %s chapters are missing (%s), skipping this file", MAX_MISSING_CHAPTERS, missing_chapter)    
 
-    #         # Skip text containing an excluded word
-    #         not_header_words_present = [ele for ele in NOT_HEADER_WORDS if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text)]           
-    #         if (not_header_words_present):
-    #             continue
-
-    #         # List of header 1 keywords present at the beginning of the text (empty or one word only)
-    #         header_1_keyword_first = [ele for ele in HEADER_1_NAMES_LIST if text.upper().startswith(ele)]
-
-    #         # Search for chapter number
-    #         if (header_1_keyword_first and len(text.split()) >= 2):
-    #             # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
-    #             letter_number = [ele for ele in NUMBER_DICT.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text.split()[1])]
-    #             # List of first digits in text (with . and : characters stuck to it)
-    #             digit = [ele for ele in text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", text.split()[1])]
-    #         else:
-    #             # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
-    #             letter_number = [ele for ele in NUMBER_DICT.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text.split()[0])]
-    #             # List of first digits in text (with . and : characters stuck to it)
-    #             digit = [ele for ele in text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", text.split()[0])]        
-
-    soup = BeautifulSoup(str_soup, "html.parser")
-    body_tag = soup.body
+        soup = BeautifulSoup(str_soup, "html.parser")
+        body_tag = soup.body
 
     logger.info("\n------------------------ Second analysis ------------------------")
     for child in body_tag.children:
