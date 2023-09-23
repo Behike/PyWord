@@ -3,9 +3,6 @@ import os
 import sys
 import logging
 
-# Get docx infos
-from config import TEMPLATES
-
 # Convert html to epub
 from jinja2 import Environment, FileSystemLoader
 from pypub import Epub, create_chapter_from_html
@@ -20,7 +17,7 @@ def create_epub(output_file, epub, soup):
         subtitle=epub.subtitle,
         language="en",
         rights=epub.rights,
-        css_paths=["Styles/styles.css"],
+        css_paths=["Config/styles.css"],
     )
 
     # If output_file already exists, delete it (=overwrite)
@@ -28,7 +25,7 @@ def create_epub(output_file, epub, soup):
         os.remove(output_file)
         logger.info("Previous epub file removed")
 
-    jinja_env = Environment(loader=FileSystemLoader(TEMPLATES))
+    jinja_env = Environment(loader=FileSystemLoader("Config"))
 
     book.builder.template = jinja_env.get_template("coverpage.xhtml.j2")
     with book.builder as builder:

@@ -9,7 +9,7 @@ from pydocx import PyDocX
 
 # Work with html
 from bs4 import BeautifulSoup
-from config import CAPITALIZE_WORDS_LIST, CHAPTER_MAX_LENGTH, HEADER_1_NAMES_LIST, NUMBER_DICT, NOT_HEADER_WORDS, MAX_MISSING_CHAPTERS
+from Config.config import CAPITALIZE_WORDS_LIST, CHAPTER_MAX_LENGTH, HEADER_1_NAMES_LIST, NUMBER_DICT, NOT_HEADER_WORDS, MAX_MISSING_CHAPTERS
 
 from metadata_parser import EpubInfo
 
@@ -225,6 +225,7 @@ def iterate_html(metadata: EpubInfo, html):
     chapter_letter_match = findall(chapter_letter_regex, str(soup), flags=MULTILINE|IGNORECASE)
     str_soup = str(soup)
 
+    # TODO: Use group name instead of index
     missing_chapter = 0
     if chapter_int_match:
         count = 1
@@ -307,11 +308,10 @@ def iterate_html(metadata: EpubInfo, html):
         LIST_OF_ACTIONS_LOGS = ""
 
         old_child = child
-
+        
         # Remove empty paragraphs
         if child.get_text().strip() == "":
-            # logger.info(f"Empty paragraph skipped")
-            # logger.info(child.extract())
+            # logger.info("Empty paragraph skipped")
             continue
 
         # If title is found in the first 3 paragraphs, remove it (as it will be properly added later)
@@ -319,7 +319,7 @@ def iterate_html(metadata: EpubInfo, html):
             logger.info("Found title: '%s', removing it", child.string.extract())
             continue
         if (child_count >= 3 and child.get_text().strip() == metadata.title.strip()):
-            logger.info("⚠️ Found title: '%s' but NOT removing it as it's not in the first %s paragraphs", child.string.extract(), child_count)
+            logger.info("/!\\ Found title: '%s' but NOT removing it as it's not in the first %s paragraphs", child.string, child_count)
 
         # If text is not a chapter but as a tag lower than h2 (h3, h4, etc.), set it as a chapter
         if (most_common_tag != '' and child.name and
@@ -351,9 +351,6 @@ def iterate_html(metadata: EpubInfo, html):
 
     logger.info("Found %s paragraphs and %s words", child_count, word_count)
 
-    # for element in soup:
-        # yield element
-
     # 1] We have specific styles for chapters
     # 2] We already have the titles/copyrights written at the very beginning
     # 3] We have HEADER_1_NAMES_LIST to recognize chapters
@@ -361,11 +358,6 @@ def iterate_html(metadata: EpubInfo, html):
     # 5] ? We have the length of the text to recognize chapters ?
     # 6] >>>> If first X chapters have a header keyword/number, use this detection scheme for the remaining of the document <<<<
     # 7] Remove table, table of content and other unused stuffs and warn the user
-
-    # FOR DEBUGGING
-    with open("Output.html", "w", encoding="utf-8") as file:
-        file.write(soup.prettify())
-    # FOR DEBUGGING
 
     return soup, word_count
 

@@ -4,7 +4,7 @@ import logging
 
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
-from config import copyright_text, SUBTITLE_MAX_SEARCH
+from Config.config import copyright_text, SUBTITLE_MAX_SEARCH
 from docx import Document
 
 logger = logging.getLogger(__name__)
