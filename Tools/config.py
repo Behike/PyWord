@@ -323,3 +323,4 @@ CH00X_FILE_PATH = TEXT_FOLDER + "ch00{0}.xhtml"
 
 # New configurations
 TEMPLATES = "Templates/"
+MAX_MISSING_CHAPTERS = 3

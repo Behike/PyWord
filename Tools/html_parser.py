@@ -1,13 +1,13 @@
 """This module contains functions for parsing and editing html files"""
 # Convert docx to html
 from collections import Counter
-from re import IGNORECASE, MULTILINE, findall, match, search, escape, compile
+from re import IGNORECASE, MULTILINE, findall, match, search, escape, compile, sub
 from pydocx import PyDocX
 
 # Work with html
 from bs4 import BeautifulSoup
 from epub_creator import create_epub
-from config import CAPITALIZE_WORDS_LIST, CHAPTER_MAX_LENGTH, HEADER_1_NAMES_LIST, NUMBER_DICT, NOT_HEADER_WORDS, DEBUG_LEVEL
+from config import CAPITALIZE_WORDS_LIST, CHAPTER_MAX_LENGTH, HEADER_1_NAMES_LIST, NUMBER_DICT, NOT_HEADER_WORDS, DEBUG_LEVEL, MAX_MISSING_CHAPTERS
 
 from metadata_parser import parse_docx, parse_html, EpubInfo
 
@@ -115,7 +115,6 @@ def chapter_formatter(text, chapter_number):
     
     old_text = text
 
-
     # List of header 1 keywords present at the beginning of the text (empty or one word only)
     header_1_keyword_first = [ele for ele in HEADER_1_NAMES_LIST if text.upper().startswith(ele)]
     
@@ -176,19 +175,19 @@ def chapter_formatter(text, chapter_number):
         text = HEADER_1_NAMES_LIST[0].capitalize() + " " + str(chapter_number) + " - " + text
         chapter_number = chapter_number + 1
         # logging.debug("[UPDATED] " + old_text + " --> " + text)
-        print("[UPDATED] " + old_text + " --> " + text)
+        # print("[UPDATED] " + old_text + " --> " + text)
 
-    print(list_of_actions_logs)
+    # print(list_of_actions_logs)
     text = capitalizeSentences(text)
     return text
 
-def docx_to_html(docx_file, html_file):
+def docx_to_html(docx_file):
     """Convert docx file to html file and save a prettified version as a file (for debugging)"""
     html = PyDocX.to_html(docx_file)
-    soup = BeautifulSoup(html, "html.parser")
 
     # Save html string variable into a file for debugging purposes
-    with open(html_file, "w", encoding="utf-8") as file:
+    soup = BeautifulSoup(html, "html.parser")
+    with open(f"{docx_file}.html", "w", encoding="utf-8") as file:
         file.write(soup.prettify())
 
     return html
@@ -201,7 +200,7 @@ def iterate_html(metadata: EpubInfo, html):
 
     word_count = 0
     most_common_tag = ''
-    REG_HEADERS = compile("h[1-6]*")
+    REG_HEADERS = compile("h[1-6]")
     list_of_found_headers = body_tag.find_all(REG_HEADERS)
     if (len(list_of_found_headers) > 1):
         list_of_tags = []
@@ -209,75 +208,106 @@ def iterate_html(metadata: EpubInfo, html):
             list_of_tags.append(tag.name)
 
         most_common_tag = max(list_of_tags, key=Counter(list_of_tags).get)
+        print(most_common_tag)
         print(f"Found multiple '{HTML_TO_WORD_HEADERS[most_common_tag]}', using them as chapters")
         
     child_count = 0
     chapter_number = 1
-  
+
+    print("------------------------ First analysis ------------------------")
+
     # Match a HEADER_1_NAMES_LIST word with punctuation and a number for Chapter keyword
     # Tag + Chapter keyword + punctuation/space (0+) + digit (1+) + punctuation/space (0+) + anything (0+) + End tag
-    CHAPTER_INT_REGEX = r"((<(\w+)>)\s*(EPILOGUE|PROLOGUE|ACKNOWLEDGMENT|ACKNOWLEDGMENTS|FOREWORD|CHAPTER)([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[^\w\s]*[ ]*)([^.]*?)(<\/\3>))"
+    CHAPTER_KEYWORDS = '|'.join(HEADER_1_NAMES_LIST)
+    CHAPTER_INT_REGEX = fr"((<(\w+)>)\s*({CHAPTER_KEYWORDS})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\]]*[ ]*)([^.]*?)(<\/\3>))"
     # Tag + Chapter + punctuation/space (0+) + text (1+) + punctuation/space (0+) + anything (0+) + End tag
-    CHAPTER_LETTER_REGEX = r"((<(\w+)>)\s*(EPILOGUE|PROLOGUE|ACKNOWLEDGMENT|ACKNOWLEDGMENTS|FOREWORD|CHAPTER)([ ]*[^\w\s]*[ ]*)([a-zA-Z]+)([ ]*[^\w\s]*[ ]*)([^.]*?)(<\/\3>))"
-
-    print("First analysis...")
+    CHAPTER_LETTER_REGEX = fr"((<(\w+)>)\s*({CHAPTER_KEYWORDS})([ ]*[^\w\s]*[ ]*)([a-zA-Z]+)([ ]*[.-:\]]*[ ]*)([^.]*?)(<\/\3>))"
     
     CHAPTER_INT_MATCH = findall(CHAPTER_INT_REGEX, str(soup), flags=MULTILINE|IGNORECASE)
     CHAPTER_LETTER_MATCH = findall(CHAPTER_LETTER_REGEX, str(soup), flags=MULTILINE|IGNORECASE)
     str_soup = str(soup)
     
+    missing_chapter = 0
     if (CHAPTER_INT_MATCH):
+        count = 1
         for chapter_match in CHAPTER_INT_MATCH:
-            H1_HTML_TAG_A = f"<{HEADERS_TO_HTML['Chapter']}>"
-            H1_HTML_TAG_B = f"</{HEADERS_TO_HTML['Chapter']}>"
-            new_text = H1_HTML_TAG_A + chapter_match[3] + ". " + chapter_match[5] + H1_HTML_TAG_B
-            if chapter_match[7] != '':
-                new_text = H1_HTML_TAG_A + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + H1_HTML_TAG_B
-            print(f"{chapter_match[0]} --> {new_text}")
-            str_soup = str_soup.replace(chapter_match[0], new_text)
+            if (chapter_match[5] != str(count)):
+                print(f"[WARNING] Chapter {count} could not be found")
+                missing_chapter += 1
+            else:
+                count += 1
 
-        most_common_tag = HEADERS_TO_HTML["Chapter"]
+        if (missing_chapter <= MAX_MISSING_CHAPTERS):
+            for chapter_match in CHAPTER_INT_MATCH:
+                H1_HTML_TAG_A = f"<{HEADERS_TO_HTML['Chapter']}>"
+                H1_HTML_TAG_B = f"</{HEADERS_TO_HTML['Chapter']}>"
+                new_text = H1_HTML_TAG_A + chapter_match[3] + ". " + chapter_match[5] + H1_HTML_TAG_B
+                if chapter_match[7] != '':
+                    new_text = H1_HTML_TAG_A + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + H1_HTML_TAG_B
+                    
+                print(chapter_match)
+                old_text = sub(r"\s+", " ", chapter_match[0]).strip() # Replace multiple spaces with only one space
+                print(f"{old_text} --> {new_text}")
+                str_soup = str_soup.replace(chapter_match[0], new_text)
+
+                # int(chapter_match[5])
+                # if (int(chapter_match[5]) != int(chapter_match[5])+1):
+            most_common_tag = HEADERS_TO_HTML["Chapter"]
+        else:
+            print(f"More than {MAX_MISSING_CHAPTERS} chapters are missing ({missing_chapter}), skipping this file")
 
     elif (CHAPTER_LETTER_MATCH):
-        for chapter_match in CHAPTER_LETTER_MATCH:
-            H1_HTML_TAG_A = f"<{HEADERS_TO_HTML['Chapter']}>"
-            H1_HTML_TAG_B = f"</{HEADERS_TO_HTML['Chapter']}>"
-            new_text = H1_HTML_TAG_A + chapter_match[3] + ". " + chapter_match[5] + H1_HTML_TAG_B
-            if chapter_match[7] != '':
-                new_text = H1_HTML_TAG_A + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + H1_HTML_TAG_B
-            print(f"{chapter_match[0]} --> {new_text}")
-            str_soup = str_soup.replace(chapter_match[0], new_text)
-            
-        most_common_tag = HEADERS_TO_HTML["Chapter"]
-        
-    else:
-        for child in body_tag.children:
-            text = child.get_text().strip()
+        ###### TO ADAPT ######
+        # for chapter_match in CHAPTER_INT_MATCH:
+        #     if (chapter_match[5] != str(count)):
+        #         print(f"[WARNING] Chapter {count} could not be found")
+        #         missing_chapter += 1
+        #     else:
+        #         count += 1
 
-            # Skip text containing an excluded word
-            not_header_words_present = [ele for ele in NOT_HEADER_WORDS if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text)]           
-            if (not_header_words_present):
-                continue
+        if (missing_chapter <= MAX_MISSING_CHAPTERS):
+            for chapter_match in CHAPTER_LETTER_MATCH:
+                H1_HTML_TAG_A = f"<{HEADERS_TO_HTML['Chapter']}>"
+                H1_HTML_TAG_B = f"</{HEADERS_TO_HTML['Chapter']}>"
+                new_text = H1_HTML_TAG_A + chapter_match[3] + ". " + chapter_match[5] + H1_HTML_TAG_B
+                if chapter_match[7] != '':
+                    new_text = H1_HTML_TAG_A + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + H1_HTML_TAG_B
+                print(f"{chapter_match[0]} --> {new_text}")
+                str_soup = str_soup.replace(chapter_match[0], new_text)
+                
+            most_common_tag = HEADERS_TO_HTML["Chapter"]
+        else:
+            print(f"More than {MAX_MISSING_CHAPTERS} chapters are missing ({missing_chapter}), skipping this file")
 
-            # List of header 1 keywords present at the beginning of the text (empty or one word only)
-            header_1_keyword_first = [ele for ele in HEADER_1_NAMES_LIST if text.upper().startswith(ele)]
+    # Count repetitive patterns (Chapter 1, Chapter 2, Chapter 3, etc.) --> Too much work for some exceptions
+    # else:
+    #     for child in body_tag.children:
+    #         text = child.get_text().strip()
+
+    #         # Skip text containing an excluded word
+    #         not_header_words_present = [ele for ele in NOT_HEADER_WORDS if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text)]           
+    #         if (not_header_words_present):
+    #             continue
+
+    #         # List of header 1 keywords present at the beginning of the text (empty or one word only)
+    #         header_1_keyword_first = [ele for ele in HEADER_1_NAMES_LIST if text.upper().startswith(ele)]
             
-            # Search for chapter number
-            if (header_1_keyword_first and len(text.split()) >= 2):
-                # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
-                letter_number = [ele for ele in NUMBER_DICT.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text.split()[1])]
-                # List of first digits in text (with . and : characters stuck to it)
-                digit = [ele for ele in text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", text.split()[1])]
-            else:
-                # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
-                letter_number = [ele for ele in NUMBER_DICT.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text.split()[0])]
-                # List of first digits in text (with . and : characters stuck to it)
-                digit = [ele for ele in text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", text.split()[0])]        
+    #         # Search for chapter number
+    #         if (header_1_keyword_first and len(text.split()) >= 2):
+    #             # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
+    #             letter_number = [ele for ele in NUMBER_DICT.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text.split()[1])]
+    #             # List of first digits in text (with . and : characters stuck to it)
+    #             digit = [ele for ele in text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", text.split()[1])]
+    #         else:
+    #             # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
+    #             letter_number = [ele for ele in NUMBER_DICT.keys() if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text.split()[0])]
+    #             # List of first digits in text (with . and : characters stuck to it)
+    #             digit = [ele for ele in text if match(r"(?<!\S)" + r"\d+" + r"[\.:]{0,1}" + r"(?!\S)", text.split()[0])]        
     
     soup = BeautifulSoup(str_soup, "html.parser")
     body_tag = soup.body
 
-    print("Second analysis...")
+    print("\n------------------------ Second analysis ------------------------")
     for child in body_tag.children:
         list_of_actions_logs = ""
 
@@ -285,7 +315,7 @@ def iterate_html(metadata: EpubInfo, html):
 
         # Remove empty paragraphs
         if (child.get_text().strip() == ""):
-            print(f"Empty paragraph skipped")
+            # print(f"Empty paragraph skipped")
             # print(child.extract())
             continue
 
@@ -296,16 +326,17 @@ def iterate_html(metadata: EpubInfo, html):
         elif (child_count >= 3 and child.get_text().strip() == metadata.title.strip()):
             print(f"/!\ Found title: '{child.string.extract()}' but NOT removing it as it's not in the first {child_count} paragraphs")
 
+        # If text is not a chapter but as a tag lower than h2 (h3, h4, etc.), set it as a chapter
         if (most_common_tag != '' and child.name and
             child.name == most_common_tag):
                 if (child.string is not None):
                     child.string = child.get_text().strip()
-                print(f"[{child.name} > {HEADERS_TO_HTML['Chapter']}] Set '{child}' as a chapter")
+                # print(f"[{child.name} > {HEADERS_TO_HTML['Chapter']}] Set '{child}' as a chapter")
                 child.string = child.get_text()
                 child.name = HEADERS_TO_HTML["Chapter"]
-        elif (most_common_tag != '' and child.name and match(REG_HEADERS, child.name) and
-              (int(child.name[1]) < int(most_common_tag[1]))):
-            print(f"Found uncommon header '{child.name}', ignored")
+        # elif (most_common_tag != '' and child.name and match(REG_HEADERS, child.name) and
+            #   (int(child.name[1]) < int(most_common_tag[1]))):
+            # print(f"Found uncommon header '{child.name}', ignored")
 
         # Find chapter in text if required and format chapter
         if (child.name == HEADERS_TO_HTML["Chapter"] or (chapter_finder(child.get_text().strip()) and most_common_tag == '')):
@@ -320,7 +351,7 @@ def iterate_html(metadata: EpubInfo, html):
         word_count += len(child.get_text().split())
 
         if (old_child != child):
-            print(f"{list_of_actions_logs} {old_child} --> {child}")
+            print(f"{list_of_actions_logs} > {old_child} --> {child}")
             # logging.debug("%s \"%s\" --> \"%s\"", list_of_actions_logs, old_child, child)
 
     print(f"Found {child_count} paragraphs and {word_count} words")
@@ -341,18 +372,19 @@ def iterate_html(metadata: EpubInfo, html):
         file.write(soup.prettify())
     # FOR DEBUGGING
 
-    return soup
+    return soup, word_count
 
 
 if __name__ == "__main__":
-    file = "Test chapter"
+    # file = "Test chapter"
+    file = "Test no chapter and style"
     # file = "A Mother's Joy"
     # file = "CHEATERS-NOT-SINNERS"
     docx_file = file + ".docx"
     html_file = file + ".html"
-    epub_file = file + ".epub"
     html = docx_to_html(docx_file, html_file)
     epub_data = parse_docx(docx_file)
     epub_data = parse_html(epub_data, html)
-    new_soup = iterate_html(epub_data, html)
+    new_soup, words_count = iterate_html(epub_data, html)
+    epub_file = f"{file} - {words_count}.epub"
     create_epub(epub_file, epub_data, new_soup)
