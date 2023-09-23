@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 file_extension = input_docx_file[input_docx_file.rfind('.')+1:]
 
                 html_file = os.path.join(output_folder_path, filename + ".html")
-                
+
                 HTML = docx_to_html(input_docx_file)
                 epub_data = parse_docx(input_docx_file)
                 epub_data = parse_html(epub_data, HTML)

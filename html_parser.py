@@ -184,6 +184,7 @@ def docx_to_html(docx_file):
     html_output = PyDocX.to_html(docx_file)
 
     # Save html string variable into a file for debugging purposes
+    # TODO: Save HTML files to an intermediate folder
     soup = BeautifulSoup(html_output, "html.parser")
     with open(f"{docx_file}.html", "w", encoding="utf-8") as file:
         file.write(soup.prettify())
