@@ -35,7 +35,6 @@ class EpubInfo:
 def parse_docx(docx_file):
     """Parse docx file and return retrieved file infos"""
     # Retrieve docx infos
-    print(docx_file)
     document = Document(docx_file)
     title = document.core_properties.title
     author = document.core_properties.author
