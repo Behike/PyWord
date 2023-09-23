@@ -1,17 +1,16 @@
 """Retrieve metadata from docx file, convert it to html, edit it and convert it to epub file"""
-
 import os
 import sys
+import logging
+
+# Get docx infos
+from config import TEMPLATES
 
 # Convert html to epub
 from jinja2 import Environment, FileSystemLoader
 from pypub import Epub, create_chapter_from_html
 
-# Get docx infos
-from config import TEMPLATES
-
-import sys
-
+logger = logging.getLogger(__name__)
 
 def create_epub(output_file, epub, soup):
     """Create epub file from EpubInfo and BeautifulSoup html"""
@@ -27,7 +26,7 @@ def create_epub(output_file, epub, soup):
     # If output_file already exists, delete it (=overwrite)
     if os.path.exists(output_file):
         os.remove(output_file)
-        print("Previous epub file removed")
+        logger.info("Previous epub file removed")
 
     jinja_env = Environment(loader=FileSystemLoader(TEMPLATES))
 
@@ -39,7 +38,7 @@ def create_epub(output_file, epub, soup):
 
         for header in headers_list:
             chapter_text = ""
-            # print(f"Adding chapter {headers_list.index(header)+1}/{len(headers_list)}")
+            # logger.info(f"Adding chapter {headers_list.index(header)+1}/{len(headers_list)}")
             while header.next_sibling is not None and header.next_sibling.name != "h2":
                 chapter_text += str(header.next_sibling)
                 header.next_sibling.extract()
@@ -51,5 +50,5 @@ def create_epub(output_file, epub, soup):
 
 
 if __name__ == "__main__":
-    print("Should NOT be executed directly")
-    sys.exit(-1)
+    logger.info("Nothing to do")
+    sys.exit(0)
