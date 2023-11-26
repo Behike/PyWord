@@ -119,6 +119,7 @@ def chapter_formatter(text, chapter_number):
     # List of header 1 keywords present at the beginning of the text (empty or one word only)
     header_1_keyword_first = [ele for ele in HEADER_1_NAMES_LIST if text.upper().startswith(ele)]
 
+    old_text = text
     # Search for chapter number
     if (header_1_keyword_first and len(text.split()) >= 2):
         # List of letter numbers (whole word only with eventually . or : at the end) | (?i) = case insensitive search
@@ -168,13 +169,11 @@ def chapter_formatter(text, chapter_number):
 
 
     if header_1_keyword_first:
-        # logging.debug("Header 1 correct: " + text)
-        logger.info("Header 1 correct: %s", text)
+        logger.info("Chapter correct: %s", text)
     else:
         text = HEADER_1_NAMES_LIST[0].capitalize() + " " + str(chapter_number) + " - " + text
         chapter_number = chapter_number + 1
-        # logging.debug("[UPDATED] " + old_text + " --> " + text)
-        # logger.info("[UPDATED] " + old_text + " --> " + text)
+        logger.info("[UPDATED] " + old_text + " --> " + text)
 
     # logger.info(list_of_actions_logs)
     text = capitalize_sentences(text)
@@ -196,7 +195,7 @@ def iterate_html(metadata: EpubInfo, html):
     """Iterate through html and yield each element"""
     global LIST_OF_ACTIONS_LOGS
 
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(html, "lxml")
     body_tag = soup.body
 
     word_count = 0
@@ -218,34 +217,109 @@ def iterate_html(metadata: EpubInfo, html):
         logger.info("Found multiple '%s', using them as chapters", HTML_TO_WORD_HEADERS[most_common_tag])
     else:
         # Match a HEADER_1_NAMES_LIST word with punctuation and a number for Chapter keyword
-        # Tag + Chapter keyword + punctuation/space (0+) + digit (1+) + punctuation/space (0+) + anything (0+) + End tag
         chapter_keywords = '|'.join(HEADER_1_NAMES_LIST)
-        chapter_int_regex = fr"((<(\w+)>)\s*({chapter_keywords})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)(<\/\3>))"
+        html_headers = '|'.join([*HTML_TO_WORD_HEADERS])
+
+        # Named groups, for futur refactoring/cleaning
+        # chapter_int_regex = fr'''
+        #     (?P<opening_header>
+        #     (?P<2><(?P<html_header>{html_headers})>)\s*
+        #     (?P<unwanted_html><[^\/]+>)*
+        #     (?P<chapter_keyword>{chapter_keywords})
+        #     (?P<chapter_number_separator>[ ]*[^\w\s]*[ ]*)
+        #     (?P<number>\d+)
+        #     (?P<separator>[ ]*[.-:\|\]]*[ ]*)
+        #     (?P<text>[^.]*?)
+        #     (?P<closing_header><\/?P=html_header>))'''
+
+        # Tag + Chapter keyword + punctuation/space (0+) + digit (1+) + punctuation/space (0+) + anything (0+) + End tag
+        chapter_int_regex = fr"((<({html_headers})>)\s*(<[^\/]+>)*.?({chapter_keywords})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)(<\/\3>))"
         # Tag + Chapter + punctuation/space (0+) + text (1+) + punctuation/space (0+) + anything (0+) + End tag
         chapter_letter_regex = fr"((<(\w+)>)\s*({chapter_keywords})([ ]*[^\w\s]*[ ]*)([a-zA-Z]+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)(<\/\3>))"
 
         chapter_int_match = findall(chapter_int_regex, str(soup), flags=MULTILINE|IGNORECASE)
         chapter_letter_match = findall(chapter_letter_regex, str(soup), flags=MULTILINE|IGNORECASE)
         str_soup = str(soup)
+        i=0
+        chapter_int_regex_clean = fr".?({chapter_keywords})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)$"
 
+        def find_chapter_text(tag):
+            return (tag.name in [*HTML_TO_WORD_HEADERS] and match(chapter_int_regex_clean, tag.text, flags=IGNORECASE))
+
+        # def strip_tags(html):
+
+        #     if tag.name not in [*HTML_TO_WORD_HEADERS]:
+        #         s = ""
+
+        #         for c in tag.contents:
+        #             if not isinstance(c, NavigableString):
+        #                 c = strip_tags(unicode(c), invalid_tags)
+        #             s += unicode(c)
+
+        #         tag.replaceWith(s)
+
+        try:
+            for tag in soup.find_all(find_chapter_text):
+                print(tag.text)
+                if tag.string:
+                    print(tag.string)
+                else:
+                    tag.replace_with(tag.text)
+                    print(tag.string)
+        except Exception as e:
+            print("ERROR", e)
+        i = 0
+        # for p in soup.find_all([*HTML_TO_WORD_HEADERS]):
+            # text = p.text
+            # if 'Chapter' in text:
+                # print(text)
+            # chapter_int_regex_clean = fr".?({chapter_keywords})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)$"
+            # chapter_match_cleaned = match(chapter_int_regex_clean, p.string, flags=IGNORECASE)
+            # if chapter_match_cleaned:
+            #     print(chapter_match_cleaned)
+            #     headword, chapter_number, chapter_text = chapter_match_cleaned.group(1), int(chapter_match_cleaned.group(3)), chapter_match_cleaned.group(5)
+            #     print(headword + " " + str(chapter_number) + " - " + chapter_text)
+            # i = i+1
+            # if i > 10:
+                # exit()
+
+        exit()
+
+        print(chapter_int_match)
         # TODO: Use group name instead of index
         missing_chapter = 0
+        previous_chapter = 0
         if chapter_int_match:
-            count = 1
+            print("chapter_int_match")
             for chapter_match in chapter_int_match:
-                if chapter_match[5] != str(count):
-                    logger.info("[WARNING] Chapter %s could not be found", count)
-                    missing_chapter += 1
-                else:
-                    count += 1
+                temp_soup = BeautifulSoup(chapter_match[0], 'html.parser')
+                chapter_int_regex_clean = fr".?({chapter_keywords})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)$"
+                chapter_match_cleaned = match(chapter_int_regex_clean, temp_soup.get_text(), flags=IGNORECASE)
+
+                headword, chapter_number, chapter_text = chapter_match_cleaned.group(1), int(chapter_match_cleaned.group(3)), chapter_match_cleaned.group(5)
+
+                print(headword + " " + str(chapter_number) + " - " + chapter_text)
+                print(previous_chapter, chapter_number)
+                if chapter_number != previous_chapter + 1:
+                    for missing in range(previous_chapter+1, chapter_number):
+                        logger.info("[WARNING] Chapter %s could not be found", missing)
+                    missing_chapter += chapter_number - previous_chapter + 1
+                previous_chapter = chapter_number
 
             if missing_chapter <= MAX_MISSING_CHAPTERS:
                 for chapter_match in chapter_int_match:
+                    temp_soup = BeautifulSoup(chapter_match[0], 'html.parser')
+                    chapter_int_regex_clean = fr".?({chapter_keywords})([ ]*[^\w\s]*[ ]*)(\d+)([ ]*[.-:\|\]]*[ ]*)([^.]*?)$"
+                    chapter_match_cleaned = match(chapter_int_regex_clean, temp_soup.get_text(), flags=IGNORECASE)
+
+                    headword, chapter_number, chapter_text = chapter_match_cleaned.group(1), int(chapter_match_cleaned.group(3)), chapter_match_cleaned.group(5)
+
                     h1_html_tag_a = f"<{HEADERS_TO_HTML['Chapter']}>"
                     h1_html_tag_b = f"</{HEADERS_TO_HTML['Chapter']}>"
-                    new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + h1_html_tag_b
-                    if chapter_match[7] != '':
-                        new_text = h1_html_tag_a + chapter_match[3] + ". " + chapter_match[5] + " - " + chapter_match[7] + h1_html_tag_b
+                    new_text = h1_html_tag_a + headword + " " + str(chapter_number) + " - " + h1_html_tag_b
+
+                    if chapter_text != '':
+                        new_text = h1_html_tag_a + headword + " " + str(chapter_number) + " - " + chapter_text + h1_html_tag_b
 
                     old_text = sub(r"\s+", " ", chapter_match[0]).strip() # Replace multiple spaces with only one space
                     logger.info("%s --> %s", old_text, new_text)
@@ -256,6 +330,7 @@ def iterate_html(metadata: EpubInfo, html):
                 logger.info("More than %s chapters are missing (%s), skipping this file", MAX_MISSING_CHAPTERS, missing_chapter)
 
         elif chapter_letter_match:
+            print("chapter_letter_match")
             # TODO: Count chapter number in letter
             # for chapter_match in CHAPTER_INT_MATCH:
             #     if (chapter_match[5] != str(count)):
@@ -297,9 +372,9 @@ def iterate_html(metadata: EpubInfo, html):
             logger.info("Found title: '%s', removing it", child.string.extract())
             continue
         if (child_count >= 3 and child.get_text().strip() == metadata.title.strip()):
-            logger.info("/!\\ Found title: '%s' but NOT removing it as it's not in the first %s paragraphs", child.string, child_count)
+            logger.info("/!\\ Found title: '%s' but NOT removing it as it's not in the paragraph %s", child.string, child_count)
 
-        # If text is not a chapter but as a tag lower than h2 (h3, h4, etc.), set it as a chapter
+        # If text is not a chapter but has a tag lower than h2 (h3, h4, etc.), set it as a chapter
         if (most_common_tag != '' and child.name and
             child.name == most_common_tag):
             if child.string is not None:
