@@ -57,7 +57,14 @@ LIST_OF_ACTIONS_LOGS = ""
 chapter_number = 1
 
 def capitalize_sentences(text):
-    """Capitalize sentences in text except for CAPITALIZE_WORDS_LIST words"""
+    """Capitalize sentences in text except for CAPITALIZE_WORDS_LIST words
+    
+        Parameters:
+            text (string): Sentence to be capitalized
+
+        Return:
+            text (string): Sentence capitalized
+    """
     text_list = text.split()
     for i in range(len(text_list)):
         text_list[i] = text_list[i].lower()
@@ -69,7 +76,14 @@ def capitalize_sentences(text):
 
 
 def chapter_finder(text):
-    """Test if text is (or can be) a chapter and format it"""
+    """Test if text is (or can be) a chapter header
+    
+        Parameters:
+            text (string): Chapter to be analyzed
+
+        Return:
+            is_chapter (boolean): If the text is considered a chapter header
+    """
     is_chapter = False
     not_header_words_present = [ele for ele in NOT_HEADER_WORDS if search(r"(?i)(?<!\S)" + escape(ele) + r"[\.:]{0,1}" + r"(?!\S)", text)]
 
@@ -113,7 +127,15 @@ def chapter_finder(text):
 
 
 def chapter_formatter(text, chapter_number):
-    """Format text as a chapter"""
+    """Format text as a chapter
+
+        Parameters:
+            text (string): Chapter to be analyzed
+            chapter_number (int): Number of chapter header
+
+        Return:
+            text (string): Text formatted as a correct chapter header
+    """
     global LIST_OF_ACTIONS_LOGS
 
     # List of header 1 keywords present at the beginning of the text (empty or one word only)
@@ -180,7 +202,14 @@ def chapter_formatter(text, chapter_number):
     return text
 
 def docx_to_html(docx_file):
-    """Convert docx file to html file and save a prettified version as a file (for debugging)"""
+    """Convert docx file to html file and save a prettified version as a file (for debugging)
+
+            Parameters:
+                    file (string): Path to DOCX file to convert
+
+            Returns:
+                    html_output (str): HTML file as a 
+    """
     html_output = PyDocX.to_html(docx_file)
 
     # Save html string variable into a file for debugging purposes
@@ -191,8 +220,20 @@ def docx_to_html(docx_file):
 
     return html_output
 
+# TODO: Split this funciton into sub-functions
 def iterate_html(metadata: EpubInfo, html):
-    """Iterate through html and yield each element"""
+    """Main function for the HTML parser
+    Iterate through HTML and test/analyze/format each element
+    
+        Parameters:
+            metadata (EpubInfo): Book metadata (title, author...)
+            html (string): E-Book content in HTML
+
+        Return:
+            soup (string): Formatted E-Book in HTML
+            word_count (int): Number of words in the whole E-Book
+    """
+
     global LIST_OF_ACTIONS_LOGS
 
     soup = BeautifulSoup(html, "lxml")
@@ -283,7 +324,7 @@ def iterate_html(metadata: EpubInfo, html):
             # if i > 10:
                 # exit()
 
-        exit()
+        # exit() ???????
 
         print(chapter_int_match)
         # TODO: Use group name instead of index

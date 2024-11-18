@@ -27,7 +27,14 @@ logging.basicConfig(
     )
 
 def path_function(file):
-    """Main function to convert a docx file to epub"""
+    """Main function to convert a DOCX file to EPUB
+
+    Prepare all paths (input, temporary and output file/folder),
+    and iterate over each converter/parser functions before creating the EPUB file.
+
+            Parameters:
+                    file (string): Path to DOCX file to convert
+    """
     input_docx_file = file.as_posix()
     filename = input_docx_file[input_docx_file.rfind('/')+1:input_docx_file.rfind('.')]
     temp_output_file_path = f"{OUTPUT_FOLDER}/{file.relative_to(*file.parts[:1]).as_posix()}"
@@ -55,13 +62,15 @@ def path_function(file):
             logging.error("    /!\\ %s failed /!\\ \n", input_docx_file)
 
 def log_result(retval):
-    """Show progress"""
+    """Show progress in terminal"""
+
     results.append(retval)
     if len(files_list)//10 == 0 or len(results) % (len(files_list)//10) == 0:
         logging.info("%d%% done", 100 * len(results) / len(files_list))
 
 
 if __name__ == '__main__':
+    """main function, retrieves all DOCX/DOC files from INPUT_FOLDER and give them to path_function using multiple thread"""
     start_time = time.time()
     logging.info("\n================================ Main script ================================")
     logging.info(datetime.datetime.now())

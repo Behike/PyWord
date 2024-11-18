@@ -11,7 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 def create_epub(output_file, epub, soup):
-    """Create epub file from EpubInfo and BeautifulSoup html"""
+    """Create epub file from EpubInfo and BeautifulSoup html
+    
+        Parameters:
+            output_file (string): Complete path to EPUB file (path + filename + extension)
+            epub (EpubInfo): E-Book metada object (title, author...)
+            soup (string): BeautifulSoup object of the E-Book formatted version
+    """
+
     book = Epub(
         epub.title,
         creator=epub.creator,
